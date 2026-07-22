@@ -35,7 +35,7 @@ pending_media = {}
 resultados_enviados = {}
 
 # ==============================================================================
-# FUNCIÓN PARA VERIFICAR ACCESO EN CLOUDFLARE KV
+# FUNCIÓN PARA VERIFICAR ACCESO EN CLOUDFLARE KV (CORREGIDA)
 # ==============================================================================
 def verificar_acceso(user_id):
     """Verifica si el usuario tiene acceso en Cloudflare KV"""
@@ -49,15 +49,47 @@ def verificar_acceso(user_id):
         
         response = requests.get(url, headers=headers, timeout=5)
         
+        # DEBUG: Ver qué responde Cloudflare
+        print(f"🔍 Cloudflare Status: {response.status_code}")
+        print(f"🔍 Cloudflare Respuesta: {response.text}")
+        
         if response.status_code == 200:
-            data = response.json()
-            if isinstance(data, dict) and 'expiracion' in data:
-                fecha_exp = datetime.fromisoformat(data['expiracion'].replace('Z', '+00:00'))
-                ahora = datetime.now(fecha_exp.tzinfo)
-                return fecha_exp > ahora
-        return False
+            try:
+                data = response.json()
+                print(f"🔍 Datos parseados: {data}")
+                
+                # Buscar 'expiracion' o 'expiration'
+                clave_fecha = None
+                if 'expiracion' in data:
+                    clave_fecha = 'expiracion'
+                elif 'expiration' in data:
+                    clave_fecha = 'expiration'
+                
+                if clave_fecha and isinstance(data, dict):
+                    fecha_exp_str = data[clave_fecha].replace('Z', '+00:00')
+                    fecha_exp = datetime.fromisoformat(fecha_exp_str)
+                    ahora = datetime.now(fecha_exp.tzinfo)
+                    
+                    if fecha_exp > ahora:
+                        print(f"✅ Usuario {user_id} tiene acceso válido hasta {fecha_exp}")
+                        return True
+                    else:
+                        print(f"⚠️ Usuario {user_id} acceso expiró el {fecha_exp}")
+                        return False
+                else:
+                    print(f"⚠️ No se encontró 'expiracion' en los datos: {data}")
+                    return False
+            except Exception as json_error:
+                print(f"❌ Error al parsear JSON: {json_error}")
+                return False
+        else:
+            print(f"⚠️ Cloudflare devolvió status {response.status_code}")
+            return False
+            
     except Exception as e:
         print(f"❌ Error al verificar acceso: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 # ==============================================================================
@@ -112,7 +144,7 @@ COMANDOS_CATEGORIAS = {
                 {'titulo': ' CONSULTA MOVISTAR POR NÚMERO', 'tag': '[VIP EN ADELANTE]', 'formato': 'movistar 967245095', 'estado': 'ACTIVO ✅', 'creditos': 5},
                 {'titulo': '📍 CONSULTA BITEL POR NÚMERO', 'tag': '[VIP EN ADELANTE]', 'formato': 'bitel 910884863', 'estado': 'ACTIVO ✅', 'creditos': 5},
                 {'titulo': '📍 CONSULTA CLARO POR NÚMERO', 'tag': '[VIP EN ADELANTE]', 'formato': 'claro 923990901', 'estado': 'ACTIVO ✅', 'creditos': 7},
-                {'titulo': '📍 CONSULTA OPERADOR DE NÚMERO', 'tag': '[VIP EN ADELANTE]', 'formato': 'valnum 987654321', 'estado': 'ACTIVO ✅', 'creditos': 3}
+                {'titulo': ' CONSULTA OPERADOR DE NÚMERO', 'tag': '[VIP EN ADELANTE]', 'formato': 'valnum 987654321', 'estado': 'ACTIVO ✅', 'creditos': 3}
             ],
             3: [
                 {'titulo': ' TELEFONÍA POR NÚMERO', 'tag': '[VIP EN ADELANTE]', 'formato': 'cel 987654321', 'estado': 'ACTIVO ✅', 'creditos': 5},
@@ -121,10 +153,10 @@ COMANDOS_CATEGORIAS = {
                 {'titulo': '📍 BUSQUEDA TITULAR CLARO, BITEL Y MOVISTAR EN TIEMPO REAL', 'tag': '[VIP EN ADELANTE]', 'formato': 'cel 987654321', 'estado': 'ACTIVO ✅', 'creditos': 7}
             ],
             4: [
-                {'titulo': '📍 BUSQUEDA DE TITULAR POR TELEFONO O DNI', 'tag': '[VIP EN ADELANTE]', 'formato': 'telp 987654321', 'estado': 'ACTIVO ✅', 'creditos': 5},
+                {'titulo': ' BUSQUEDA DE TITULAR POR TELEFONO O DNI', 'tag': '[VIP EN ADELANTE]', 'formato': 'telp 987654321', 'estado': 'ACTIVO ✅', 'creditos': 5},
                 {'titulo': '📍 TELEFONÍA GENERAL POR DNI O NÚMERO', 'tag': '[VIP EN ADELANTE]', 'formato': 'telx 44445555 o /telx 987654321', 'estado': 'ACTIVO ✅', 'creditos': 5},
                 {'titulo': ' BITEL - EN TIEMPO REAL', 'tag': '[VIP EN ADELANTE]', 'formato': 'bitel 987654321', 'estado': 'ACTIVO ✅', 'creditos': 7},
-                {'titulo': '📍 CLARO - EN TIEMPO REAL', 'tag': '[VIP EN ADELANTE]', 'formato': 'claro 987654321', 'estado': 'ACTIVO ✅', 'creditos': 7}
+                {'titulo': ' CLARO - EN TIEMPO REAL', 'tag': '[VIP EN ADELANTE]', 'formato': 'claro 987654321', 'estado': 'ACTIVO ✅', 'creditos': 7}
             ],
             5: [
                 {'titulo': '📍 MOVISTAR - EN TIEMPO REAL', 'tag': '[VIP EN ADELANTE]', 'formato': 'movistar 987654321', 'estado': 'ACTIVO ✅', 'creditos': 7}
@@ -180,7 +212,7 @@ COMANDOS_CATEGORIAS = {
             2: [
                 {'titulo': ' TIVE ORIGINAL SUNARP [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'tive BFA908', 'estado': 'ACTIVO ✅', 'creditos': 15},
                 {'titulo': '📍 TIVE GENERADO SUNARP [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'tiveg ABC123', 'estado': 'ACTIVO ✅', 'creditos': 15},
-                {'titulo': '📍 TARJETA DE PROPIEDAD FISICA [GENERADO]', 'tag': '[VIP EN ADELANTE]', 'formato': 'tarjeta ABC-123', 'estado': 'ACTIVO ✅', 'creditos': 10},
+                {'titulo': ' TARJETA DE PROPIEDAD FISICA [GENERADO]', 'tag': '[VIP EN ADELANTE]', 'formato': 'tarjeta ABC-123', 'estado': 'ACTIVO ✅', 'creditos': 10},
                 {'titulo': '📍 DATOS PLACA IMAGEN', 'tag': '[VIP EN ADELANTE]', 'formato': 'pla2 ABC123', 'estado': 'ACTIVO ✅', 'creditos': 2}
             ],
             3: [
@@ -212,7 +244,7 @@ COMANDOS_CATEGORIAS = {
     # FINANCIERO
     # ========================================
     'financiero': {
-        'titulo': '💰 FINANCIERO',
+        'titulo': ' FINANCIERO',
         'total_paginas': 1,
         'paginas': {
             1: [
@@ -240,17 +272,17 @@ COMANDOS_CATEGORIAS = {
     # JUSTICIA (2 páginas)
     # ========================================
     'justicia': {
-        'titulo': '⚖️ JUSTICIA',
+        'titulo': '️ JUSTICIA',
         'total_paginas': 2,
         'paginas': {
             1: [
                 {'titulo': '📍 FISCALÍA TEXTO [DNI] - DOXER', 'tag': '[DOXER EN ADELANTE]', 'formato': 'fiscalia 44445555', 'estado': 'ACTIVO ✅', 'creditos': 12},
                 {'titulo': '📍 FISCALÍA PDF [DNI] - HACKER', 'tag': '[HACKER EN ADELANTE]', 'formato': 'fiscaliapdf 44445555', 'estado': 'ACTIVO ✅', 'creditos': 30},
                 {'titulo': '📍 FISCALÍA PDF [RUC] - HACKER', 'tag': '[HACKER EN ADELANTE]', 'formato': 'fisruc 20536902385', 'estado': 'ACTIVO ✅', 'creditos': 30},
-                {'titulo': '📍 FISCALÍA TEXTO [RUC] - DOXER', 'tag': '[DOXER EN ADELANTE]', 'formato': 'fisructext 20536902385', 'estado': 'ACTIVO ✅', 'creditos': 12}
+                {'titulo': ' FISCALÍA TEXTO [RUC] - DOXER', 'tag': '[DOXER EN ADELANTE]', 'formato': 'fisructext 20536902385', 'estado': 'ACTIVO ✅', 'creditos': 12}
             ],
             2: [
-                {'titulo': '📍 FISCALÍA POR NOMBRES [TXT] - HACKER', 'tag': '[HACKER EN ADELANTE]', 'formato': 'fisnm URIEL|BERNAL|JUSCACHI', 'estado': 'ACTIVO ✅', 'creditos': 30},
+                {'titulo': ' FISCALÍA POR NOMBRES [TXT] - HACKER', 'tag': '[HACKER EN ADELANTE]', 'formato': 'fisnm URIEL|BERNAL|JUSCACHI', 'estado': 'ACTIVO ✅', 'creditos': 30},
                 {'titulo': '📍 FISCALÍA POR NOMBRES [PDF] - HACKER', 'tag': '[HACKER EN ADELANTE]', 'formato': 'fisnmpdf URIEL|BERNAL|JUSCACHI', 'estado': 'ACTIVO ✅', 'creditos': 30},
                 {'titulo': '📍 FISCALÍA CASO TEXTO - DOXER', 'tag': '[DOXER EN ADELANTE]', 'formato': 'fiscaso 01805114504-2023-000045-0000', 'estado': 'ACTIVO ✅', 'creditos': 12},
                 {'titulo': ' FISCALÍA CASO PDF - HACKER', 'tag': '[HACKER EN ADELANTE]', 'formato': 'fiscasopdf 01805114504-2023-000045-0000', 'estado': 'ACTIVO ✅', 'creditos': 30}
@@ -275,7 +307,7 @@ COMANDOS_CATEGORIAS = {
     # FAMILIA
     # ========================================
     'familia': {
-        'titulo': '👨👩‍👧 FAMILIA',
+        'titulo': '👩‍👧 FAMILIA',
         'total_paginas': 1,
         'paginas': {
             1: [
@@ -291,7 +323,7 @@ COMANDOS_CATEGORIAS = {
     # MINEDU
     # ========================================
     'minedu': {
-        'titulo': '🎓 MINEDU',
+        'titulo': ' MINEDU',
         'total_paginas': 1,
         'paginas': {
             1: [
@@ -332,7 +364,7 @@ COMANDOS_CATEGORIAS = {
                 {'titulo': '📍 DESCANSO + RECETA LA LUZ [PDF]', 'tag': '[NOOB EN ADELANTE]', 'formato': 'laluz 44445555|INFECCION GASTROINTESTINAL|3|AMOXICILINA 500MG', 'estado': 'ACTIVO ✅', 'creditos': 60},
                 {'titulo': '📍 DESCANSO MÉDICO MINSA [PDF]', 'tag': '[NOOB EN ADELANTE]', 'formato': 'dminsa 60685138|INFECCIÓN ESTOMACAL|HOSPITAL NACIONAL CAYETANO HEREDIA|21-04-2026|2', 'estado': 'ACTIVO ✅', 'creditos': 50},
                 {'titulo': '📍 DESCANSO MÉDICO ESSALUD [PDF]', 'tag': '[NOOB EN ADELANTE]', 'formato': 'dessalud DNI|NOMBRE|CONTINGENCIA|DIAS', 'estado': 'ACTIVO ✅', 'creditos': 50},
-                {'titulo': '📍 DESCANSO + RECETA LA LUZ [PDF COMBINADO]', 'tag': '[NOOB EN ADELANTE]', 'formato': 'laluz DNI|DIAGNOSTICO|DIAS|MEDICAMENTOS', 'estado': 'ACTIVO ✅', 'creditos': 60}
+                {'titulo': ' DESCANSO + RECETA LA LUZ [PDF COMBINADO]', 'tag': '[NOOB EN ADELANTE]', 'formato': 'laluz DNI|DIAGNOSTICO|DIAS|MEDICAMENTOS', 'estado': 'ACTIVO ✅', 'creditos': 60}
             ]
         }
     },
@@ -363,11 +395,11 @@ COMANDOS_CATEGORIAS = {
                 {'titulo': ' C4 AZUL [GENERADO]', 'tag': '[VIP EN ADELANTE]', 'formato': 'c4 44441111', 'estado': 'ACTIVO ✅', 'creditos': 5},
                 {'titulo': '📍 C4 BLANCO [GENERADO]', 'tag': '[VIP EN ADELANTE]', 'formato': 'c4b 44441111', 'estado': 'ACTIVO ✅', 'creditos': 5},
                 {'titulo': ' CERTIFICADO DE INSCRIPCION [GENERADO]', 'tag': '[VIP EN ADELANTE]', 'formato': 'c4i 44441111', 'estado': 'ACTIVO ✅', 'creditos': 8},
-                {'titulo': '📍 DNI VIRTUAL AZUL', 'tag': '[VIP EN ADELANTE]', 'formato': 'dniv 44445555', 'estado': 'ACTIVO ✅', 'creditos': 8}
+                {'titulo': ' DNI VIRTUAL AZUL', 'tag': '[VIP EN ADELANTE]', 'formato': 'dniv 44445555', 'estado': 'ACTIVO ✅', 'creditos': 8}
             ],
             2: [
                 {'titulo': '📍 DNI ELECTRÓNICO', 'tag': '[VIP EN ADELANTE]', 'formato': 'dnive 44445555', 'estado': 'ACTIVO ✅', 'creditos': 8},
-                {'titulo': '📍 CERTIF. ANTECEDENTES PENALES [GENERADO]', 'tag': '[VIP EN ADELANTE]', 'formato': 'antpe 44445555', 'estado': 'ACTIVO ✅', 'creditos': 8},
+                {'titulo': ' CERTIF. ANTECEDENTES PENALES [GENERADO]', 'tag': '[VIP EN ADELANTE]', 'formato': 'antpe 44445555', 'estado': 'ACTIVO ✅', 'creditos': 8},
                 {'titulo': ' CERTIF. ANTECEDENTES JUDICIALES [GENERADO]', 'tag': '[VIP EN ADELANTE]', 'formato': 'antju 44445555', 'estado': 'ACTIVO ✅', 'creditos': 8},
                 {'titulo': '📍 ANTECEDENTES POLICIALES', 'tag': '[VIP EN ADELANTE]', 'formato': 'antpol 44445555', 'estado': 'ACTIVO ✅', 'creditos': 8}
             ]
@@ -441,7 +473,7 @@ def generar_botones_navegacion(categoria, pagina_actual):
     fila_nav = []
     
     if pagina_actual > 1:
-        fila_nav.append(Button.inline("⬅️ Anterior", f'nav_{categoria}_anterior_{pagina_actual}'))
+        fila_nav.append(Button.inline("️ Anterior", f'nav_{categoria}_anterior_{pagina_actual}'))
     
     if pagina_actual < total_paginas:
         fila_nav.append(Button.inline("Siguiente ️", f'nav_{categoria}_siguiente_{pagina_actual}'))
@@ -461,10 +493,10 @@ def generar_menu_principal_botones():
     return [
         [Button.inline("📄 RENIEC", b'categoria_reniec'), Button.inline(" METADATA", b'categoria_metadata')],
         [Button.inline("📞 TELEFONIA", b'categoria_telefonia'), Button.inline(" FACIAL", b'categoria_facial')],
-        [Button.inline("🚗 VEHICULOS", b'categoria_vehiculos'), Button.inline("👤 PERSONAS", b'categoria_personas')],
+        [Button.inline("🚗 VEHICULOS", b'categoria_vehiculos'), Button.inline(" PERSONAS", b'categoria_personas')],
         [Button.inline(" DELITOS", b'categoria_delitos'), Button.inline("⚖️ JUSTICIA", b'categoria_justicia')],
         [Button.inline("💰 FINANCIERO", b'categoria_financiero'), Button.inline("📑 SUNAT", b'categoria_sunat')],
-        [Button.inline("️ SUNARP", b'categoria_sunarp'), Button.inline("👨‍👩 FAMILIA", b'categoria_familia')],
+        [Button.inline("️ SUNARP", b'categoria_sunarp'), Button.inline("👨‍ FAMILIA", b'categoria_familia')],
         [Button.inline("🎓 MINEDU", b'categoria_minedu'), Button.inline("💤 DESCANSOS", b'categoria_descansos')],
         [Button.inline(" MTC", b'categoria_mtc'), Button.inline("🇷 ARGENTINA", b'categoria_argentina')],
         [Button.inline(" EXTRAS", b'categoria_extras'), Button.inline("⚙️ GENERADOR", b'categoria_generador')],
@@ -505,7 +537,7 @@ async def mostrar_categoria_handler(event):
         print(f"   → Mostrando categoría: {categoria}")
         
         if categoria not in COMANDOS_CATEGORIAS:
-            await event.answer("❌ Categoría no disponible aún", alert=True)
+            await event.answer(" Categoría no disponible aún", alert=True)
             return
         
         mensaje = generar_mensaje_pagina(categoria, 1)
@@ -530,7 +562,7 @@ async def navegacion_paginas_handler(event):
         print(f"   → Navegación: {categoria} - {accion} - página {pagina_actual}")
         
         if categoria not in COMANDOS_CATEGORIAS:
-            await event.answer("❌ Categoría no encontrada", alert=True)
+            await event.answer(" Categoría no encontrada", alert=True)
             return
         
         total_paginas = COMANDOS_CATEGORIAS[categoria]['total_paginas']
@@ -577,7 +609,7 @@ async def volver_menu_handler(event):
         await event.answer("🔙 Menú principal", alert=False)
         
     except Exception as e:
-        print(f"❌ Error al volver al menú: {e}")
+        print(f" Error al volver al menú: {e}")
         import traceback
         traceback.print_exc()
 
@@ -912,8 +944,8 @@ async def user_receive_handler(event):
         mensajes_validos.sort(key=lambda x: x.date)
         
         if not mensajes_validos:
-            print(f"   ⚠️ No se encontró respuesta válida después de {tiempo_maximo}s")
-            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n⚠️ ERROR: No se recibió respuesta en {tiempo_maximo} segundos. posiblemente no se encuentra datos, si crees que es un error intente nuevamente.")
+            print(f"   ️ No se encontró respuesta válida después de {tiempo_maximo}s")
+            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n️ ERROR: No se recibió respuesta en {tiempo_maximo} segundos. posiblemente no se encuentra datos, si crees que es un error intente nuevamente.")
             print("   ✅ Mensaje de timeout enviado al bot")
             return
         
@@ -992,10 +1024,10 @@ async def main():
     global bot_id, main_account_id
     
     print("\n" + "="*60)
-    print("🔥 INICIANDO AXEL BOT")
+    print(" INICIANDO AXEL BOT")
     print("="*60)
     
-    print("🔐 Iniciando cuenta principal...")
+    print(" Iniciando cuenta principal...")
     await user_client.start()
     me = await user_client.get_me()
     main_account_id = me.id
@@ -1023,4 +1055,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("\n🛑 Bot detenido.")
+        print("\n Bot detenido.")
