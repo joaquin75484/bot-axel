@@ -77,10 +77,10 @@ def verificar_acceso(user_id):
                         print(f"⚠️ Usuario {user_id} acceso expiró el {fecha_exp}")
                         return False
                 else:
-                    print(f"⚠️ No se encontró 'expiracion' en los datos: {data}")
+                    print(f"️ No se encontró 'expiracion' en los datos: {data}")
                     return False
             except Exception as json_error:
-                print(f"❌ Error al parsear JSON: {json_error}")
+                print(f" Error al parsear JSON: {json_error}")
                 return False
         else:
             print(f"⚠️ Cloudflare devolvió status {response.status_code}")
@@ -115,11 +115,11 @@ COMANDOS_CATEGORIAS = {
     # METADATA
     # ========================================
     'metadata': {
-        'titulo': '📇 METADATA',
+        'titulo': ' METADATA',
         'total_paginas': 1,
         'paginas': {
             1: [
-                {'titulo': '📍 METADATA COMPLETA [DNI + PDF]', 'tag': '[NOOB EN ADELANTE]', 'formato': 'metadata 44445555', 'estado': 'ACTIVO ✅', 'creditos': 20},
+                {'titulo': ' METADATA COMPLETA [DNI + PDF]', 'tag': '[NOOB EN ADELANTE]', 'formato': 'metadata 44445555', 'estado': 'ACTIVO ✅', 'creditos': 20},
                 {'titulo': '📍 SEEKER MÓDULO 1 PDF [NÚMERO]', 'tag': '[DOXER EN ADELANTE]', 'formato': 'metanum 987654321', 'estado': 'ACTIVO ✅', 'creditos': 10},
                 {'titulo': '📍 SEEKER MÓDULO 2 [DNI]', 'tag': '[VIP EN ADELANTE]', 'formato': 'seekerdni 44445555', 'estado': 'ACTIVO ✅', 'creditos': 10},
                 {'titulo': ' SEEKER MÓDULO 2 [NÚMERO]', 'tag': '[HACKER EN ADELANTE]', 'formato': 'seekernum 987654321', 'estado': 'ACTIVO ✅', 'creditos': 30}
@@ -131,7 +131,7 @@ COMANDOS_CATEGORIAS = {
     # TELEFONIA (5 páginas)
     # ========================================
     'telefonia': {
-        'titulo': ' TELEFONIA',
+        'titulo': '📞 TELEFONIA',
         'total_paginas': 5,
         'paginas': {
             1: [
@@ -141,22 +141,22 @@ COMANDOS_CATEGORIAS = {
                 {'titulo': '📍 TITULAR DETALLADO POR NÚMERO', 'tag': '[VIP EN ADELANTE]', 'formato': 'titular 951568168', 'estado': 'ACTIVO ✅', 'creditos': 5}
             ],
             2: [
-                {'titulo': ' CONSULTA MOVISTAR POR NÚMERO', 'tag': '[VIP EN ADELANTE]', 'formato': 'movistar 967245095', 'estado': 'ACTIVO ✅', 'creditos': 5},
+                {'titulo': '📱 CONSULTA MOVISTAR POR NÚMERO', 'tag': '[VIP EN ADELANTE]', 'formato': 'movistar 967245095', 'estado': 'ACTIVO ✅', 'creditos': 5},
                 {'titulo': '📍 CONSULTA BITEL POR NÚMERO', 'tag': '[VIP EN ADELANTE]', 'formato': 'bitel 910884863', 'estado': 'ACTIVO ✅', 'creditos': 5},
                 {'titulo': '📍 CONSULTA CLARO POR NÚMERO', 'tag': '[VIP EN ADELANTE]', 'formato': 'claro 923990901', 'estado': 'ACTIVO ✅', 'creditos': 7},
-                {'titulo': ' CONSULTA OPERADOR DE NÚMERO', 'tag': '[VIP EN ADELANTE]', 'formato': 'valnum 987654321', 'estado': 'ACTIVO ✅', 'creditos': 3}
+                {'titulo': '📱 CONSULTA OPERADOR DE NÚMERO', 'tag': '[VIP EN ADELANTE]', 'formato': 'valnum 987654321', 'estado': 'ACTIVO ✅', 'creditos': 3}
             ],
             3: [
                 {'titulo': ' TELEFONÍA POR NÚMERO', 'tag': '[VIP EN ADELANTE]', 'formato': 'cel 987654321', 'estado': 'ACTIVO ✅', 'creditos': 5},
                 {'titulo': '📍 TELEFONÍA POR DNI', 'tag': '[VIP EN ADELANTE]', 'formato': 'tel 44445555', 'estado': 'ACTIVO ✅', 'creditos': 5},
-                {'titulo': ' LÍNEAS CLARO POR DNI', 'tag': '[VIP EN ADELANTE]', 'formato': 'clardni 44445555', 'estado': 'ACTIVO ✅', 'creditos': 5},
+                {'titulo': '📱 LÍNEAS CLARO POR DNI', 'tag': '[VIP EN ADELANTE]', 'formato': 'clardni 44445555', 'estado': 'ACTIVO ✅', 'creditos': 5},
                 {'titulo': '📍 BUSQUEDA TITULAR CLARO, BITEL Y MOVISTAR EN TIEMPO REAL', 'tag': '[VIP EN ADELANTE]', 'formato': 'cel 987654321', 'estado': 'ACTIVO ✅', 'creditos': 7}
             ],
             4: [
-                {'titulo': ' BUSQUEDA DE TITULAR POR TELEFONO O DNI', 'tag': '[VIP EN ADELANTE]', 'formato': 'telp 987654321', 'estado': 'ACTIVO ✅', 'creditos': 5},
+                {'titulo': '📱 BUSQUEDA DE TITULAR POR TELEFONO O DNI', 'tag': '[VIP EN ADELANTE]', 'formato': 'telp 987654321', 'estado': 'ACTIVO ✅', 'creditos': 5},
                 {'titulo': '📍 TELEFONÍA GENERAL POR DNI O NÚMERO', 'tag': '[VIP EN ADELANTE]', 'formato': 'telx 44445555 o /telx 987654321', 'estado': 'ACTIVO ✅', 'creditos': 5},
-                {'titulo': ' BITEL - EN TIEMPO REAL', 'tag': '[VIP EN ADELANTE]', 'formato': 'bitel 987654321', 'estado': 'ACTIVO ✅', 'creditos': 7},
-                {'titulo': ' CLARO - EN TIEMPO REAL', 'tag': '[VIP EN ADELANTE]', 'formato': 'claro 987654321', 'estado': 'ACTIVO ✅', 'creditos': 7}
+                {'titulo': '📱 BITEL - EN TIEMPO REAL', 'tag': '[VIP EN ADELANTE]', 'formato': 'bitel 987654321', 'estado': 'ACTIVO ✅', 'creditos': 7},
+                {'titulo': '📱 CLARO - EN TIEMPO REAL', 'tag': '[VIP EN ADELANTE]', 'formato': 'claro 987654321', 'estado': 'ACTIVO ✅', 'creditos': 7}
             ],
             5: [
                 {'titulo': '📍 MOVISTAR - EN TIEMPO REAL', 'tag': '[VIP EN ADELANTE]', 'formato': 'movistar 987654321', 'estado': 'ACTIVO ✅', 'creditos': 7}
@@ -168,11 +168,11 @@ COMANDOS_CATEGORIAS = {
     # FACIAL
     # ========================================
     'facial': {
-        'titulo': ' FACIAL',
+        'titulo': '📸 FACIAL',
         'total_paginas': 1,
         'paginas': {
             1: [
-                {'titulo': ' IA | RECONOCIMIENTO FACIAL MASIVO', 'tag': '[NOOB EN ADELANTE]', 'formato': 'facial [foto]', 'estado': 'ACTIVO ✅', 'creditos': 45}
+                {'titulo': '🤖 IA | RECONOCIMIENTO FACIAL MASIVO', 'tag': '[NOOB EN ADELANTE]', 'formato': 'facial [foto]', 'estado': 'ACTIVO ✅', 'creditos': 45}
             ]
         }
     },
@@ -187,11 +187,11 @@ COMANDOS_CATEGORIAS = {
             1: [
                 {'titulo': '📍 SEEKER COMPLETO POR DNI', 'tag': '[VIP EN ADELANTE]', 'formato': 'seekerdni 44445555', 'estado': 'ACTIVO ✅', 'creditos': 10},
                 {'titulo': ' SEEKER COMPLETO PDF', 'tag': '[VIP EN ADELANTE]', 'formato': 'metadni 44445555', 'estado': 'ACTIVO ✅', 'creditos': 25},
-                {'titulo': ' SEEKER COMPLETO v2.0', 'tag': '[VIP EN ADELANTE]', 'formato': 'seeker 45454545', 'estado': 'ACTIVO ✅', 'creditos': 15},
+                {'titulo': '📍 SEEKER COMPLETO v2.0', 'tag': '[VIP EN ADELANTE]', 'formato': 'seeker 45454545', 'estado': 'ACTIVO ✅', 'creditos': 15},
                 {'titulo': '📍 SEEKER v1.0', 'tag': '[VIP EN ADELANTE]', 'formato': 'seeker 44445555', 'estado': 'ACTIVO ✅', 'creditos': 10}
             ],
             2: [
-                {'titulo': ' CORREOS de una persona', 'tag': '[VIP EN ADELANTE]', 'formato': 'co 44445555', 'estado': 'ACTIVO ✅', 'creditos': 5}
+                {'titulo': '📧 CORREOS de una persona', 'tag': '[VIP EN ADELANTE]', 'formato': 'co 44445555', 'estado': 'ACTIVO ✅', 'creditos': 5}
             ]
         }
     },
@@ -206,19 +206,19 @@ COMANDOS_CATEGORIAS = {
             1: [
                 {'titulo': '📍 INSCRIPCIÓN VEHICULAR [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'insve ABC123', 'estado': 'ACTIVO ✅', 'creditos': 10},
                 {'titulo': '📍 DATOS DE UN VEHICULO POR PLACA', 'tag': '[VIP EN ADELANTE]', 'formato': 'pla ABC123', 'estado': 'ACTIVO ✅', 'creditos': 5},
-                {'titulo': ' SUNARP | ASIENTOS [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'placapdf ABC123', 'estado': 'ACTIVO ✅', 'creditos': 10},
+                {'titulo': '🏛️ SUNARP | ASIENTOS [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'placapdf ABC123', 'estado': 'ACTIVO ✅', 'creditos': 10},
                 {'titulo': '📍 TIVE ONLINE SUNARP [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'tiv BFA908', 'estado': 'ACTIVO ✅', 'creditos': 15}
             ],
             2: [
-                {'titulo': ' TIVE ORIGINAL SUNARP [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'tive BFA908', 'estado': 'ACTIVO ✅', 'creditos': 15},
+                {'titulo': '📍 TIVE ORIGINAL SUNARP [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'tive BFA908', 'estado': 'ACTIVO ✅', 'creditos': 15},
                 {'titulo': '📍 TIVE GENERADO SUNARP [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'tiveg ABC123', 'estado': 'ACTIVO ✅', 'creditos': 15},
-                {'titulo': ' TARJETA DE PROPIEDAD FISICA [GENERADO]', 'tag': '[VIP EN ADELANTE]', 'formato': 'tarjeta ABC-123', 'estado': 'ACTIVO ✅', 'creditos': 10},
+                {'titulo': '📄 TARJETA DE PROPIEDAD FISICA [GENERADO]', 'tag': '[VIP EN ADELANTE]', 'formato': 'tarjeta ABC-123', 'estado': 'ACTIVO ✅', 'creditos': 10},
                 {'titulo': '📍 DATOS PLACA IMAGEN', 'tag': '[VIP EN ADELANTE]', 'formato': 'pla2 ABC123', 'estado': 'ACTIVO ✅', 'creditos': 2}
             ],
             3: [
                 {'titulo': ' REVISIÓN TÉCNICA VEHICULAR [TXT]', 'tag': '[VIP EN ADELANTE]', 'formato': 'citv ABC123', 'estado': 'ACTIVO ✅', 'creditos': 8},
-                {'titulo': ' SOAT VEHÍCULAR TEXTO', 'tag': '[VIP EN ADELANTE]', 'formato': 'soat ABC123', 'estado': 'ACTIVO ✅', 'creditos': 7},
-                {'titulo': ' SOAT VEHÍCULAR PDF', 'tag': '[VIP EN ADELANTE]', 'formato': 'soatpdf ABC123', 'estado': 'ACTIVO ✅', 'creditos': 7},
+                {'titulo': '️ SOAT VEHÍCULAR TEXTO', 'tag': '[VIP EN ADELANTE]', 'formato': 'soat ABC123', 'estado': 'ACTIVO ✅', 'creditos': 7},
+                {'titulo': '️ SOAT VEHÍCULAR PDF', 'tag': '[VIP EN ADELANTE]', 'formato': 'soatpdf ABC123', 'estado': 'ACTIVO ✅', 'creditos': 7},
                 {'titulo': '📍 BOLETA INFORMATIVA VEHICULAR [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'boleta ABC123', 'estado': 'ACTIVO ✅', 'creditos': 10}
             ]
         }
@@ -228,13 +228,13 @@ COMANDOS_CATEGORIAS = {
     # DELITOS
     # ========================================
     'delitos': {
-        'titulo': ' DELITOS',
+        'titulo': '⚖️ DELITOS',
         'total_paginas': 1,
         'paginas': {
             1: [
-                {'titulo': ' ANTECEDENTES PERSONALES [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'anteper 44445555', 'estado': 'ACTIVO ✅', 'creditos': 8},
+                {'titulo': '📄 ANTECEDENTES PERSONALES [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'anteper 44445555', 'estado': 'ACTIVO ✅', 'creditos': 8},
                 {'titulo': ' REQUISITORIA DE PERSONA [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'rqper 44445555', 'estado': 'ACTIVO ✅', 'creditos': 8},
-                {'titulo': ' DENUNCIAS POLICIALES - DOXER', 'tag': '[DOXER EN ADELANTE]', 'formato': 'denuncias 44445555', 'estado': 'ACTIVO ✅', 'creditos': 20},
+                {'titulo': '🚨 DENUNCIAS POLICIALES - DOXER', 'tag': '[DOXER EN ADELANTE]', 'formato': 'denuncias 44445555', 'estado': 'ACTIVO ✅', 'creditos': 20},
                 {'titulo': '📍 SIDPOL PDF - HACKER', 'tag': '[HACKER EN ADELANTE]', 'formato': 'sidpolpdf 44445555', 'estado': 'ACTIVO ✅', 'creditos': 15}
             ]
         }
@@ -244,7 +244,7 @@ COMANDOS_CATEGORIAS = {
     # FINANCIERO
     # ========================================
     'financiero': {
-        'titulo': ' FINANCIERO',
+        'titulo': '💰 FINANCIERO',
         'total_paginas': 1,
         'paginas': {
             1: [
@@ -257,13 +257,13 @@ COMANDOS_CATEGORIAS = {
     # SUNARP
     # ========================================
     'sunarp': {
-        'titulo': '️ SUNARP',
+        'titulo': '🏛️ SUNARP',
         'total_paginas': 1,
         'paginas': {
             1: [
-                {'titulo': ' SUNARP TEXTO POR DNI', 'tag': '[VIP EN ADELANTE]', 'formato': 'sunarp 44445555', 'estado': 'ACTIVO ✅', 'creditos': 6},
+                {'titulo': '📄 SUNARP TEXTO POR DNI', 'tag': '[VIP EN ADELANTE]', 'formato': 'sunarp 44445555', 'estado': 'ACTIVO ✅', 'creditos': 6},
                 {'titulo': ' SUNARP PDF POR DNI', 'tag': '[VIP EN ADELANTE]', 'formato': 'sunarpdf 44445555', 'estado': 'ACTIVO ✅', 'creditos': 10},
-                {'titulo': ' BIENES INMUEBLES PDFs', 'tag': '[VIP EN ADELANTE]', 'formato': 'bienespdf 44445555', 'estado': 'ACTIVO ✅', 'creditos': 12}
+                {'titulo': '🏠 BIENES INMUEBLES PDFs', 'tag': '[VIP EN ADELANTE]', 'formato': 'bienespdf 44445555', 'estado': 'ACTIVO ✅', 'creditos': 12}
             ]
         }
     },
@@ -272,20 +272,20 @@ COMANDOS_CATEGORIAS = {
     # JUSTICIA (2 páginas)
     # ========================================
     'justicia': {
-        'titulo': '️ JUSTICIA',
+        'titulo': '⚖️ JUSTICIA',
         'total_paginas': 2,
         'paginas': {
             1: [
                 {'titulo': '📍 FISCALÍA TEXTO [DNI] - DOXER', 'tag': '[DOXER EN ADELANTE]', 'formato': 'fiscalia 44445555', 'estado': 'ACTIVO ✅', 'creditos': 12},
                 {'titulo': '📍 FISCALÍA PDF [DNI] - HACKER', 'tag': '[HACKER EN ADELANTE]', 'formato': 'fiscaliapdf 44445555', 'estado': 'ACTIVO ✅', 'creditos': 30},
                 {'titulo': '📍 FISCALÍA PDF [RUC] - HACKER', 'tag': '[HACKER EN ADELANTE]', 'formato': 'fisruc 20536902385', 'estado': 'ACTIVO ✅', 'creditos': 30},
-                {'titulo': ' FISCALÍA TEXTO [RUC] - DOXER', 'tag': '[DOXER EN ADELANTE]', 'formato': 'fisructext 20536902385', 'estado': 'ACTIVO ✅', 'creditos': 12}
+                {'titulo': '📄 FISCALÍA TEXTO [RUC] - DOXER', 'tag': '[DOXER EN ADELANTE]', 'formato': 'fisructext 20536902385', 'estado': 'ACTIVO ✅', 'creditos': 12}
             ],
             2: [
                 {'titulo': ' FISCALÍA POR NOMBRES [TXT] - HACKER', 'tag': '[HACKER EN ADELANTE]', 'formato': 'fisnm URIEL|BERNAL|JUSCACHI', 'estado': 'ACTIVO ✅', 'creditos': 30},
                 {'titulo': '📍 FISCALÍA POR NOMBRES [PDF] - HACKER', 'tag': '[HACKER EN ADELANTE]', 'formato': 'fisnmpdf URIEL|BERNAL|JUSCACHI', 'estado': 'ACTIVO ✅', 'creditos': 30},
                 {'titulo': '📍 FISCALÍA CASO TEXTO - DOXER', 'tag': '[DOXER EN ADELANTE]', 'formato': 'fiscaso 01805114504-2023-000045-0000', 'estado': 'ACTIVO ✅', 'creditos': 12},
-                {'titulo': ' FISCALÍA CASO PDF - HACKER', 'tag': '[HACKER EN ADELANTE]', 'formato': 'fiscasopdf 01805114504-2023-000045-0000', 'estado': 'ACTIVO ✅', 'creditos': 30}
+                {'titulo': '📄 FISCALÍA CASO PDF - HACKER', 'tag': '[HACKER EN ADELANTE]', 'formato': 'fiscasopdf 01805114504-2023-000045-0000', 'estado': 'ACTIVO ✅', 'creditos': 30}
             ]
         }
     },
@@ -294,11 +294,11 @@ COMANDOS_CATEGORIAS = {
     # SUNAT
     # ========================================
     'sunat': {
-        'titulo': ' SUNAT',
+        'titulo': '💵 SUNAT',
         'total_paginas': 1,
         'paginas': {
             1: [
-                {'titulo': ' RUC INFO COMPLETO', 'tag': '[VIP EN ADELANTE]', 'formato': 'ruc 20165465009', 'estado': 'ACTIVO ✅', 'creditos': 5}
+                {'titulo': '📄 RUC INFO COMPLETO', 'tag': '[VIP EN ADELANTE]', 'formato': 'ruc 20165465009', 'estado': 'ACTIVO ✅', 'creditos': 5}
             ]
         }
     },
@@ -307,13 +307,13 @@ COMANDOS_CATEGORIAS = {
     # FAMILIA
     # ========================================
     'familia': {
-        'titulo': '👩‍👧 FAMILIA',
+        'titulo': '👨‍👩‍‍👦 FAMILIA',
         'total_paginas': 1,
         'paginas': {
             1: [
                 {'titulo': '📍 ARBOL GENEALOGICO TEXTO', 'tag': '[VIP EN ADELANTE]', 'formato': 'ag 44441111', 'estado': 'ACTIVO ✅', 'creditos': 8},
-                {'titulo': ' ARBOL GENEALOGICO TEXTO v2', 'tag': '[VIP EN ADELANTE]', 'formato': 'ag2 44441111', 'estado': 'ACTIVO ✅', 'creditos': 8},
-                {'titulo': ' ARBOL GENEALOGICO VISUAL [PNG]', 'tag': '[SOLO PARA RANGOS CON CRÉDITOS]', 'formato': 'agv 44441111', 'estado': 'ACTIVO ✅', 'creditos': 15},
+                {'titulo': '📄 ARBOL GENEALOGICO TEXTO v2', 'tag': '[VIP EN ADELANTE]', 'formato': 'ag2 44441111', 'estado': 'ACTIVO ✅', 'creditos': 8},
+                {'titulo': '️ ARBOL GENEALOGICO VISUAL [PNG]', 'tag': '[SOLO PARA RANGOS CON CRÉDITOS]', 'formato': 'agv 44441111', 'estado': 'ACTIVO ✅', 'creditos': 15},
                 {'titulo': '📍 ÁRBOL FAMILIAR VISUAL MEJORADO', 'tag': '[VIP EN ADELANTE]', 'formato': 'famivi 44441111', 'estado': 'ACTIVO ✅', 'creditos': 12}
             ]
         }
@@ -323,7 +323,7 @@ COMANDOS_CATEGORIAS = {
     # MINEDU
     # ========================================
     'minedu': {
-        'titulo': ' MINEDU',
+        'titulo': '🎓 MINEDU',
         'total_paginas': 1,
         'paginas': {
             1: [
@@ -340,13 +340,13 @@ COMANDOS_CATEGORIAS = {
         'total_paginas': 2,
         'paginas': {
             1: [
-                {'titulo': ' LICENCIA DE CONDUCIR', 'tag': '[VIP EN ADELANTE]', 'formato': 'licencia 45454545', 'estado': 'ACTIVO ✅', 'creditos': 6},
-                {'titulo': '📍 LICENCIA DE CONDUCIR ELECTRÓNICA [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'licenciapdf 45454545', 'estado': 'ACTIVO ✅', 'creditos': 10},
+                {'titulo': '📄 LICENCIA DE CONDUCIR', 'tag': '[VIP EN ADELANTE]', 'formato': 'licencia 45454545', 'estado': 'ACTIVO ✅', 'creditos': 6},
+                {'titulo': ' LICENCIA DE CONDUCIR ELECTRÓNICA [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'licenciapdf 45454545', 'estado': 'ACTIVO ✅', 'creditos': 10},
                 {'titulo': '📍 PAPELETAS POR DNI [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'record 45454545', 'estado': 'ACTIVO ✅', 'creditos': 10},
                 {'titulo': ' TARJETA DE PROPIEDAD [IMAGEN]', 'tag': '[VIP EN ADELANTE]', 'formato': 'tarjeta ABS920', 'estado': 'ACTIVO ✅', 'creditos': 8}
             ],
             2: [
-                {'titulo': ' REVISIÓN TÉCNICA VEHICULAR [TXT]', 'tag': '[VIP EN ADELANTE]', 'formato': 'citv ABC123', 'estado': 'ACTIVO ✅', 'creditos': 6},
+                {'titulo': '🔧 REVISIÓN TÉCNICA VEHICULAR [TXT]', 'tag': '[VIP EN ADELANTE]', 'formato': 'citv ABC123', 'estado': 'ACTIVO ✅', 'creditos': 6},
                 {'titulo': '📍 REVISIÓN TÉCNICA VEHICULAR [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'citvpdf ABC123', 'estado': 'ACTIVO ✅', 'creditos': 12},
                 {'titulo': ' REQUISITORIA VEHICULAR [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'rqpla APM384', 'estado': 'ACTIVO ✅', 'creditos': 8}
             ]
@@ -357,14 +357,14 @@ COMANDOS_CATEGORIAS = {
     # DESCANSOS
     # ========================================
     'descansos': {
-        'titulo': '💤 DESCANSOS',
+        'titulo': ' DESCANSOS',
         'total_paginas': 1,
         'paginas': {
             1: [
-                {'titulo': '📍 DESCANSO + RECETA LA LUZ [PDF]', 'tag': '[NOOB EN ADELANTE]', 'formato': 'laluz 44445555|INFECCION GASTROINTESTINAL|3|AMOXICILINA 500MG', 'estado': 'ACTIVO ✅', 'creditos': 60},
+                {'titulo': ' DESCANSO + RECETA LA LUZ [PDF]', 'tag': '[NOOB EN ADELANTE]', 'formato': 'laluz 44445555|INFECCION GASTROINTESTINAL|3|AMOXICILINA 500MG', 'estado': 'ACTIVO ✅', 'creditos': 60},
                 {'titulo': '📍 DESCANSO MÉDICO MINSA [PDF]', 'tag': '[NOOB EN ADELANTE]', 'formato': 'dminsa 60685138|INFECCIÓN ESTOMACAL|HOSPITAL NACIONAL CAYETANO HEREDIA|21-04-2026|2', 'estado': 'ACTIVO ✅', 'creditos': 50},
                 {'titulo': '📍 DESCANSO MÉDICO ESSALUD [PDF]', 'tag': '[NOOB EN ADELANTE]', 'formato': 'dessalud DNI|NOMBRE|CONTINGENCIA|DIAS', 'estado': 'ACTIVO ✅', 'creditos': 50},
-                {'titulo': ' DESCANSO + RECETA LA LUZ [PDF COMBINADO]', 'tag': '[NOOB EN ADELANTE]', 'formato': 'laluz DNI|DIAGNOSTICO|DIAS|MEDICAMENTOS', 'estado': 'ACTIVO ✅', 'creditos': 60}
+                {'titulo': '📄 DESCANSO + RECETA LA LUZ [PDF COMBINADO]', 'tag': '[NOOB EN ADELANTE]', 'formato': 'laluz DNI|DIAGNOSTICO|DIAS|MEDICAMENTOS', 'estado': 'ACTIVO ✅', 'creditos': 60}
             ]
         }
     },
@@ -373,11 +373,11 @@ COMANDOS_CATEGORIAS = {
     # ARGENTINA
     # ========================================
     'argentina': {
-        'titulo': '🇦 ARGENTINA',
+        'titulo': '🇦🇷 ARGENTINA',
         'total_paginas': 1,
         'paginas': {
             1: [
-                {'titulo': ' BUSQUEDA POR DNI ARGENTINA', 'tag': '[NOOB EN ADELANTE]', 'formato': 'dniarg 12345678', 'estado': 'ACTIVO ✅', 'creditos': 2},
+                {'titulo': '📄 BUSQUEDA POR DNI ARGENTINA', 'tag': '[NOOB EN ADELANTE]', 'formato': 'dniarg 12345678', 'estado': 'ACTIVO ✅', 'creditos': 2},
                 {'titulo': '📍 BUSQUEDA POR TELÉFONO ARGENTINA', 'tag': '[NOOB EN ADELANTE]', 'formato': 'telarg 2284524520', 'estado': 'ACTIVO ✅', 'creditos': 2},
                 {'titulo': '📍 BUSQUEDA POR NOMBRE ARGENTINA', 'tag': '[NOOB EN ADELANTE]', 'formato': 'nmarg juan perez', 'estado': 'ACTIVO ✅', 'creditos': 2}
             ]
@@ -392,14 +392,14 @@ COMANDOS_CATEGORIAS = {
         'total_paginas': 2,
         'paginas': {
             1: [
-                {'titulo': ' C4 AZUL [GENERADO]', 'tag': '[VIP EN ADELANTE]', 'formato': 'c4 44441111', 'estado': 'ACTIVO ✅', 'creditos': 5},
+                {'titulo': '📘 C4 AZUL [GENERADO]', 'tag': '[VIP EN ADELANTE]', 'formato': 'c4 44441111', 'estado': 'ACTIVO ✅', 'creditos': 5},
                 {'titulo': '📍 C4 BLANCO [GENERADO]', 'tag': '[VIP EN ADELANTE]', 'formato': 'c4b 44441111', 'estado': 'ACTIVO ✅', 'creditos': 5},
-                {'titulo': ' CERTIFICADO DE INSCRIPCION [GENERADO]', 'tag': '[VIP EN ADELANTE]', 'formato': 'c4i 44441111', 'estado': 'ACTIVO ✅', 'creditos': 8},
-                {'titulo': ' DNI VIRTUAL AZUL', 'tag': '[VIP EN ADELANTE]', 'formato': 'dniv 44445555', 'estado': 'ACTIVO ✅', 'creditos': 8}
+                {'titulo': '📄 CERTIFICADO DE INSCRIPCION [GENERADO]', 'tag': '[VIP EN ADELANTE]', 'formato': 'c4i 44441111', 'estado': 'ACTIVO ✅', 'creditos': 8},
+                {'titulo': '📘 DNI VIRTUAL AZUL', 'tag': '[VIP EN ADELANTE]', 'formato': 'dniv 44445555', 'estado': 'ACTIVO ✅', 'creditos': 8}
             ],
             2: [
                 {'titulo': '📍 DNI ELECTRÓNICO', 'tag': '[VIP EN ADELANTE]', 'formato': 'dnive 44445555', 'estado': 'ACTIVO ✅', 'creditos': 8},
-                {'titulo': ' CERTIF. ANTECEDENTES PENALES [GENERADO]', 'tag': '[VIP EN ADELANTE]', 'formato': 'antpe 44445555', 'estado': 'ACTIVO ✅', 'creditos': 8},
+                {'titulo': '📄 CERTIF. ANTECEDENTES PENALES [GENERADO]', 'tag': '[VIP EN ADELANTE]', 'formato': 'antpe 44445555', 'estado': 'ACTIVO ✅', 'creditos': 8},
                 {'titulo': ' CERTIF. ANTECEDENTES JUDICIALES [GENERADO]', 'tag': '[VIP EN ADELANTE]', 'formato': 'antju 44445555', 'estado': 'ACTIVO ✅', 'creditos': 8},
                 {'titulo': '📍 ANTECEDENTES POLICIALES', 'tag': '[VIP EN ADELANTE]', 'formato': 'antpol 44445555', 'estado': 'ACTIVO ✅', 'creditos': 8}
             ]
@@ -449,7 +449,7 @@ def generar_mensaje_pagina(categoria, pagina):
             f"- Créditos: {cmd['creditos']}\n\n"
         )
     
-    mensaje += f"📄 Página {pagina} de {total_paginas}"
+    mensaje += f" Página {pagina} de {total_paginas}"
     
     return mensaje
 
@@ -473,10 +473,10 @@ def generar_botones_navegacion(categoria, pagina_actual):
     fila_nav = []
     
     if pagina_actual > 1:
-        fila_nav.append(Button.inline("️ Anterior", f'nav_{categoria}_anterior_{pagina_actual}'))
+        fila_nav.append(Button.inline("⬅️ Anterior", f'nav_{categoria}_anterior_{pagina_actual}'))
     
     if pagina_actual < total_paginas:
-        fila_nav.append(Button.inline("Siguiente ️", f'nav_{categoria}_siguiente_{pagina_actual}'))
+        fila_nav.append(Button.inline("Siguiente ➡️", f'nav_{categoria}_siguiente_{pagina_actual}'))
     
     if fila_nav:
         botones_nav.append(fila_nav)
@@ -491,15 +491,15 @@ def generar_botones_navegacion(categoria, pagina_actual):
 def generar_menu_principal_botones():
     """Genera los botones del menú principal"""
     return [
-        [Button.inline("📄 RENIEC", b'categoria_reniec'), Button.inline(" METADATA", b'categoria_metadata')],
-        [Button.inline("📞 TELEFONIA", b'categoria_telefonia'), Button.inline(" FACIAL", b'categoria_facial')],
-        [Button.inline("🚗 VEHICULOS", b'categoria_vehiculos'), Button.inline(" PERSONAS", b'categoria_personas')],
-        [Button.inline(" DELITOS", b'categoria_delitos'), Button.inline("⚖️ JUSTICIA", b'categoria_justicia')],
-        [Button.inline("💰 FINANCIERO", b'categoria_financiero'), Button.inline("📑 SUNAT", b'categoria_sunat')],
-        [Button.inline("️ SUNARP", b'categoria_sunarp'), Button.inline("👨‍ FAMILIA", b'categoria_familia')],
-        [Button.inline("🎓 MINEDU", b'categoria_minedu'), Button.inline("💤 DESCANSOS", b'categoria_descansos')],
-        [Button.inline(" MTC", b'categoria_mtc'), Button.inline("🇷 ARGENTINA", b'categoria_argentina')],
-        [Button.inline(" EXTRAS", b'categoria_extras'), Button.inline("⚙️ GENERADOR", b'categoria_generador')],
+        [Button.inline(" RENIEC", b'categoria_reniec'), Button.inline("📇 METADATA", b'categoria_metadata')],
+        [Button.inline(" TELEFONIA", b'categoria_telefonia'), Button.inline("📸 FACIAL", b'categoria_facial')],
+        [Button.inline("🚗 VEHICULOS", b'categoria_vehiculos'), Button.inline("👤 PERSONAS", b'categoria_personas')],
+        [Button.inline("⚖️ DELITOS", b'categoria_delitos'), Button.inline("⚖️ JUSTICIA", b'categoria_justicia')],
+        [Button.inline("💰 FINANCIERO", b'categoria_financiero'), Button.inline(" SUNAT", b'categoria_sunat')],
+        [Button.inline("🏛️ SUNARP", b'categoria_sunarp'), Button.inline("‍👩‍👧👦 FAMILIA", b'categoria_familia')],
+        [Button.inline(" MINEDU", b'categoria_minedu'), Button.inline("💤 DESCANSOS", b'categoria_descansos')],
+        [Button.inline("🚌 MTC", b'categoria_mtc'), Button.inline("🇦🇷 ARGENTINA", b'categoria_argentina')],
+        [Button.inline("🧩 EXTRAS", b'categoria_extras'), Button.inline("🛠️ GENERADOR", b'categoria_generador')],
         [Button.inline("❓ AYUDA", b'categoria_ayuda'), Button.inline("❌ CERRAR", b'cerrar_menu')]
     ]
 
@@ -528,8 +528,8 @@ async def cmds_handler(event):
         print("   → Ejecutando comando /cmds - Mostrando menú principal")
         
         mensaje_menu = (
-            " **[ MENU DE CONSULTAS ]**\n\n"
-            "**PROVENET DOX BOT**\n\n"
+            "📋 **[ MENU DE CONSULTAS ]**\n\n"
+            "**AXEL DOX BOT**\n\n"
             "Selecciona una categoría para ver los comandos disponibles.\n\n"
             "Secciones activas ⇒ 18\n"
             "Comandos activos ⇒ 78"
@@ -548,11 +548,19 @@ async def cmds_handler(event):
 async def mostrar_categoria_handler(event):
     """Handler para mostrar categorías"""
     try:
+        sender_id = event.sender_id
+        
+        # 🛡️ VERIFICAR ACCESO
+        tiene_acceso = verificar_acceso(sender_id)
+        if not tiene_acceso:
+            await event.answer("⚠️ No tienes acceso activo", alert=True)
+            return
+        
         categoria = event.pattern_match.group(1).decode('utf-8')
         print(f"   → Mostrando categoría: {categoria}")
         
         if categoria not in COMANDOS_CATEGORIAS:
-            await event.answer(" Categoría no disponible aún", alert=True)
+            await event.answer("❌ Categoría no disponible aún", alert=True)
             return
         
         mensaje = generar_mensaje_pagina(categoria, 1)
@@ -570,6 +578,14 @@ async def mostrar_categoria_handler(event):
 async def navegacion_paginas_handler(event):
     """Handler para navegación de páginas"""
     try:
+        sender_id = event.sender_id
+        
+        # ️ VERIFICAR ACCESO
+        tiene_acceso = verificar_acceso(sender_id)
+        if not tiene_acceso:
+            await event.answer("️ No tienes acceso activo", alert=True)
+            return
+        
         categoria = event.pattern_match.group(1).decode('utf-8')
         accion = event.pattern_match.group(2).decode('utf-8')
         pagina_actual = int(event.pattern_match.group(3).decode('utf-8'))
@@ -577,7 +593,7 @@ async def navegacion_paginas_handler(event):
         print(f"   → Navegación: {categoria} - {accion} - página {pagina_actual}")
         
         if categoria not in COMANDOS_CATEGORIAS:
-            await event.answer(" Categoría no encontrada", alert=True)
+            await event.answer("❌ Categoría no encontrada", alert=True)
             return
         
         total_paginas = COMANDOS_CATEGORIAS[categoria]['total_paginas']
@@ -587,7 +603,7 @@ async def navegacion_paginas_handler(event):
         elif accion == 'siguiente':
             nueva_pagina = pagina_actual + 1
         else:
-            await event.answer("️ Acción inválida", alert=True)
+            await event.answer("❌ Acción inválida", alert=True)
             return
         
         if nueva_pagina < 1 or nueva_pagina > total_paginas:
@@ -601,7 +617,7 @@ async def navegacion_paginas_handler(event):
         await event.answer(f"Página {nueva_pagina} de {total_paginas}", alert=False)
         
     except Exception as e:
-        print(f" Error en navegación: {e}")
+        print(f"❌ Error en navegación: {e}")
         import traceback
         traceback.print_exc()
 
@@ -609,6 +625,14 @@ async def navegacion_paginas_handler(event):
 async def volver_menu_handler(event):
     """Handler para volver al menú principal"""
     try:
+        sender_id = event.sender_id
+        
+        # 🛡️ VERIFICAR ACCESO
+        tiene_acceso = verificar_acceso(sender_id)
+        if not tiene_acceso:
+            await event.answer("⚠️ No tienes acceso activo", alert=True)
+            return
+        
         print("   → Volviendo al menú principal")
         mensaje_menu = (
             "📋 **[ MENU DE CONSULTAS ]**\n\n"
@@ -624,7 +648,7 @@ async def volver_menu_handler(event):
         await event.answer("🔙 Menú principal", alert=False)
         
     except Exception as e:
-        print(f" Error al volver al menú: {e}")
+        print(f"❌ Error al volver al menú: {e}")
         import traceback
         traceback.print_exc()
 
@@ -653,11 +677,11 @@ async def bot_message_handler(event):
         chat_id = event.chat_id
         sender_id = event.sender_id
         
-        # 🛡️ CORRECCIÓN CLAVE: Si es un comando de menú, NO procesarlo ni enviarlo a la cuenta principal.
-        # El cmds_handler ya se encarga de responder en el chat secundario.
+        # 🛡️ CORRECCIÓN: Si es un comando de menú, IGNORAR COMPLETAMENTE
+        # El cmds_handler ya se encarga de responder (con menú o con error de acceso)
         if texto_lower.startswith('/cmds') or texto_lower.startswith('/menu') or texto_lower.startswith('/help'):
-            print(f"   → Comando de menú detectado ('{texto}'), ignorando para no enviar a cuenta principal")
-            return  # Detener aquí, no hacer nada más en este handler
+            print(f"   → Comando de menú detectado ('{texto}'), ignorando en bot_message_handler")
+            return
         
         print(f"\n{'='*50}")
         print(f"📩 [BOT] Mensaje recibido")
@@ -715,7 +739,7 @@ async def bot_message_handler(event):
                                 )
                                 print(f"   ✅ Mensaje 'Procesando...' editado exitosamente")
                             except Exception as e:
-                                print(f"   ️ Error al editar mensaje: {e}")
+                                print(f"   ⚠️ Error al editar mensaje: {e}")
                                 import traceback
                                 traceback.print_exc()
                         
@@ -765,7 +789,7 @@ async def bot_message_handler(event):
                                 )
                                 print(f"   ✅ Mensaje editado para {chat_id_pendiente}")
                             except Exception as e:
-                                print(f"   ️ Error al editar mensaje: {e}")
+                                print(f"   ⚠️ Error al editar mensaje: {e}")
                         
                     except Exception as e:
                         print(f"   ⚠️ Error al reenviar media: {e}")
@@ -791,7 +815,7 @@ async def bot_message_handler(event):
             await event.reply(
                 f"⚠️ <b>No tienes acceso activo.</b>\n\n"
                 f"Por favor, envía tu ID al administrador para activar tu membresía.\n\n"
-                f"🆔 <b>Tu ID:</b> <code>{sender_id}</code>",
+                f" <b>Tu ID:</b> <code>{sender_id}</code>",
                 parse_mode='html'
             )
             return  # DETENER - No procesar
@@ -799,10 +823,10 @@ async def bot_message_handler(event):
         print(f"✅ Usuario {sender_id} tiene acceso verificado")
         
         if chat_id in processing_messages:
-            print(f"   ⚠️ Ya hay un procesamiento en curso para {chat_id}, ignorando")
+            print(f"   ️ Ya hay un procesamiento en curso para {chat_id}, ignorando")
             return
         
-        processing_msg = await event.reply(" Procesando...")
+        processing_msg = await event.reply("⏳ Procesando...")
         processing_messages[chat_id] = processing_msg.id
         print(f"   → Guardado chat {chat_id} con msg_id {processing_msg.id}")
 
@@ -815,7 +839,7 @@ async def bot_message_handler(event):
         print(f"   ✅ Enviado a cuenta principal")
         
     except Exception as e:
-        print(f"❌ [BOT] ERROR GENERAL: {e}")
+        print(f" [BOT] ERROR GENERAL: {e}")
         import traceback
         traceback.print_exc()
 
@@ -831,7 +855,7 @@ async def user_receive_handler(event):
         texto = event.raw_text or event.text or ""
         
         print(f"\n{'='*50}")
-        print(f" [USER] Mensaje recibido")
+        print(f"📥 [USER] Mensaje recibido")
         print(f"   Sender ID: {sender_id}")
         print(f"   Texto: {texto[:100]}...")
         
@@ -840,7 +864,7 @@ async def user_receive_handler(event):
             return
         
         if sender_id != bot_id:
-            print(f"   ️ Ignorado: sender_id ({sender_id}) != bot_id ({bot_id})")
+            print(f"   ⚠️ Ignorado: sender_id ({sender_id}) != bot_id ({bot_id})")
             return
         
         print("   ✅ Paso 1: Viene del bot")
@@ -856,12 +880,12 @@ async def user_receive_handler(event):
             chat_destino = int(primera_linea.replace("PROCESAR PARA:", "").strip())
             print(f"   ✅ Paso 3: Chat destino = {chat_destino}")
         except Exception as e:
-            print(f"    Paso 3 falló: {e}")
+            print(f"   ❌ Paso 3 falló: {e}")
             return
         
         lineas = texto.split("\n\n")
         if len(lineas) < 2:
-            print("   ️ Formato incorrecto (menos de 2 líneas)")
+            print("   ⚠️ Formato incorrecto (menos de 2 líneas)")
             return
         
         texto_original = lineas[1].strip()
@@ -963,8 +987,8 @@ async def user_receive_handler(event):
         mensajes_validos.sort(key=lambda x: x.date)
         
         if not mensajes_validos:
-            print(f"   ️ No se encontró respuesta válida después de {tiempo_maximo}s")
-            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n️ ERROR: No se recibió respuesta en {tiempo_maximo} segundos. posiblemente no se encuentra datos, si crees que es un error intente nuevamente.")
+            print(f"   ⚠️ No se encontró respuesta válida después de {tiempo_maximo}s")
+            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n ERROR: No se recibió respuesta en {tiempo_maximo} segundos. posiblemente no se encuentra datos, si crees que es un error intente nuevamente.")
             print("   ✅ Mensaje de timeout enviado al bot")
             return
         
@@ -1043,10 +1067,10 @@ async def main():
     global bot_id, main_account_id
     
     print("\n" + "="*60)
-    print(" INICIANDO AXEL BOT")
+    print("🚀 INICIANDO AXEL BOT")
     print("="*60)
     
-    print(" Iniciando cuenta principal...")
+    print("👤 Iniciando cuenta principal...")
     await user_client.start()
     me = await user_client.get_me()
     main_account_id = me.id
@@ -1059,7 +1083,7 @@ async def main():
     print(f"✅ Bot: @{bot_me.username} (ID: {bot_id})")
 
     print("\n" + "="*60)
-    print("🚀 AXEL BOT INICIADO - Esperando mensajes...")
+    print("✅ AXEL BOT INICIADO - Esperando mensajes...")
     print("="*60 + "\n")
 
     await asyncio.gather(
@@ -1074,4 +1098,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("\n Bot detenido.")
+        print("\n⛔ Bot detenido.")
