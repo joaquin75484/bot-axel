@@ -650,14 +650,14 @@ async def bot_message_handler(event):
     try:
         texto = event.raw_text or event.text or ""
         texto_lower = texto.lower().strip()
-        
-        # 🛡️ CORRECCIÓN: IGNORAR COMANDOS DE MENÚ PARA QUE NO SE PROCESEN NI SE ENVÍEN A LA CUENTA PRINCIPAL
-        if texto_lower.startswith('/cmds') or texto_lower.startswith('/menu') or texto_lower.startswith('/help'):
-            print(f"   → Comando de menú detectado ('{texto}'), ignorando para no enviar a cuenta principal")
-            return  # Detener aquí, el cmds_handler ya se encargó de responder en el chat
-        
         chat_id = event.chat_id
         sender_id = event.sender_id
+        
+        # 🛡️ CORRECCIÓN CLAVE: Si es un comando de menú, NO procesarlo ni enviarlo a la cuenta principal.
+        # El cmds_handler ya se encarga de responder en el chat secundario.
+        if texto_lower.startswith('/cmds') or texto_lower.startswith('/menu') or texto_lower.startswith('/help'):
+            print(f"   → Comando de menú detectado ('{texto}'), ignorando para no enviar a cuenta principal")
+            return  # Detener aquí, no hacer nada más en este handler
         
         print(f"\n{'='*50}")
         print(f"📩 [BOT] Mensaje recibido")
