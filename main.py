@@ -506,10 +506,25 @@ def generar_menu_principal_botones():
 # ==============================================================================
 # SECCIÓN 6: HANDLERS DE COMANDOS DEL MENÚ
 # ==============================================================================
-@bot_client.on(events.NewMessage(incoming=True, pattern=r'(?i)^/cmds$|^/menu$|^/help$'))
+@bot_client.on(events.NewMessage(incoming=True, pattern=r'(?i)^/cmds|^/menu|^/help'))
 async def cmds_handler(event):
     """Handler para el comando /cmds"""
     try:
+        sender_id = event.sender_id
+        
+        # 🛡️ VERIFICAR ACCESO PRIMERO
+        tiene_acceso = verificar_acceso(sender_id)
+        
+        if not tiene_acceso:
+            print(f"⚠️ ACCESO DENEGADO: User ID {sender_id} intentó usar menú")
+            await event.reply(
+                f"⚠️ <b>No tienes acceso activo.</b>\n\n"
+                f"Por favor, envía tu ID al administrador para activar tu membresía.\n\n"
+                f"🆔 <b>Tu ID:</b> <code>{sender_id}</code>",
+                parse_mode='html'
+            )
+            return  # DETENER AQUÍ, NO MOSTRAR MENÚ
+        
         print("   → Ejecutando comando /cmds - Mostrando menú principal")
         
         mensaje_menu = (
@@ -597,7 +612,7 @@ async def volver_menu_handler(event):
         print("   → Volviendo al menú principal")
         mensaje_menu = (
             "📋 **[ MENU DE CONSULTAS ]**\n\n"
-            "**PROVENET DOX BOT**\n\n"
+            "**AXEL DOX BOT**\n\n"
             "Selecciona una categoría para ver los comandos disponibles.\n\n"
             "Secciones activas ⇒ 18\n"
             "Comandos activos ⇒ 78"
@@ -644,9 +659,6 @@ async def bot_message_handler(event):
         print(f"   Texto: {texto[:80]}...")
         print(f"   Tiene media: {bool(event.media)}")
         
-        # ✅ Ignorar comandos del menú (ya fueron procesados por sus handlers)
-        if texto.lower().startswith('/cmds') or texto.lower().startswith('/menu') or texto.lower().startswith('/help'):
-            return
         
         # ==============================================================================
         # PROCESAMIENTO DE CUENTA PRINCIPAL
