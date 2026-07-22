@@ -96,10 +96,6 @@ def verificar_acceso(user_id):
 # SECCIÓN 4: BASE DE DATOS DE COMANDOS POR CATEGORÍA
 # ==============================================================================
 COMANDOS_CATEGORIAS = {
-    
-    # ========================================
-    # RENIEC
-    # ========================================
     'reniec': {
         'titulo': '📄 RENIEC',
         'total_paginas': 1,
@@ -110,10 +106,6 @@ COMANDOS_CATEGORIAS = {
             ]
         }
     },
-    
-    # ========================================
-    # METADATA
-    # ========================================
     'metadata': {
         'titulo': '📇 METADATA',
         'total_paginas': 1,
@@ -126,12 +118,8 @@ COMANDOS_CATEGORIAS = {
             ]
         }
     },
-    
-    # ========================================
-    # TELEFONIA (5 páginas)
-    # ========================================
     'telefonia': {
-        'titulo': ' TELEFONIA',
+        'titulo': '📞 TELEFONIA',
         'total_paginas': 5,
         'paginas': {
             1: [
@@ -163,12 +151,8 @@ COMANDOS_CATEGORIAS = {
             ]
         }
     },
-    
-    # ========================================
-    # FACIAL
-    # ========================================
     'facial': {
-        'titulo': ' FACIAL',
+        'titulo': '👤 FACIAL',
         'total_paginas': 1,
         'paginas': {
             1: [
@@ -176,10 +160,6 @@ COMANDOS_CATEGORIAS = {
             ]
         }
     },
-    
-    # ========================================
-    # PERSONAS (2 páginas)
-    # ========================================
     'personas': {
         'titulo': '👤 PERSONAS',
         'total_paginas': 2,
@@ -195,12 +175,8 @@ COMANDOS_CATEGORIAS = {
             ]
         }
     },
-    
-    # ========================================
-    # VEHICULOS (3 páginas)
-    # ========================================
     'vehiculos': {
-        'titulo': ' VEHICULOS',
+        'titulo': '🚗 VEHICULOS',
         'total_paginas': 3,
         'paginas': {
             1: [
@@ -223,12 +199,8 @@ COMANDOS_CATEGORIAS = {
             ]
         }
     },
-    
-    # ========================================
-    # DELITOS
-    # ========================================
     'delitos': {
-        'titulo': ' DELITOS',
+        'titulo': '⚖️ DELITOS',
         'total_paginas': 1,
         'paginas': {
             1: [
@@ -239,12 +211,8 @@ COMANDOS_CATEGORIAS = {
             ]
         }
     },
-    
-    # ========================================
-    # FINANCIERO
-    # ========================================
     'financiero': {
-        'titulo': ' FINANCIERO',
+        'titulo': '💰 FINANCIERO',
         'total_paginas': 1,
         'paginas': {
             1: [
@@ -252,12 +220,8 @@ COMANDOS_CATEGORIAS = {
             ]
         }
     },
-    
-    # ========================================
-    # SUNARP
-    # ========================================
     'sunarp': {
-        'titulo': '️ SUNARP',
+        'titulo': '📑 SUNARP',
         'total_paginas': 1,
         'paginas': {
             1: [
@@ -267,12 +231,8 @@ COMANDOS_CATEGORIAS = {
             ]
         }
     },
-    
-    # ========================================
-    # JUSTICIA (2 páginas)
-    # ========================================
     'justicia': {
-        'titulo': '️ JUSTICIA',
+        'titulo': '⚖️ JUSTICIA',
         'total_paginas': 2,
         'paginas': {
             1: [
@@ -289,12 +249,8 @@ COMANDOS_CATEGORIAS = {
             ]
         }
     },
-    
-    # ========================================
-    # SUNAT
-    # ========================================
     'sunat': {
-        'titulo': ' SUNAT',
+        'titulo': '📑 SUNAT',
         'total_paginas': 1,
         'paginas': {
             1: [
@@ -302,12 +258,8 @@ COMANDOS_CATEGORIAS = {
             ]
         }
     },
-    
-    # ========================================
-    # FAMILIA
-    # ========================================
     'familia': {
-        'titulo': '👩‍👧 FAMILIA',
+        'titulo': '👨‍👩‍👧 FAMILIA',
         'total_paginas': 1,
         'paginas': {
             1: [
@@ -318,12 +270,8 @@ COMANDOS_CATEGORIAS = {
             ]
         }
     },
-    
-    # ========================================
-    # MINEDU
-    # ========================================
     'minedu': {
-        'titulo': ' MINEDU',
+        'titulo': '🎓 MINEDU',
         'total_paginas': 1,
         'paginas': {
             1: [
@@ -331,10 +279,6 @@ COMANDOS_CATEGORIAS = {
             ]
         }
     },
-    
-    # ========================================
-    # MTC (2 páginas)
-    # ========================================
     'mtc': {
         'titulo': '🚌 MTC',
         'total_paginas': 2,
@@ -352,10 +296,6 @@ COMANDOS_CATEGORIAS = {
             ]
         }
     },
-    
-    # ========================================
-    # DESCANSOS
-    # ========================================
     'descansos': {
         'titulo': '💤 DESCANSOS',
         'total_paginas': 1,
@@ -368,10 +308,6 @@ COMANDOS_CATEGORIAS = {
             ]
         }
     },
-    
-    # ========================================
-    # ARGENTINA
-    # ========================================
     'argentina': {
         'titulo': '🇦 ARGENTINA',
         'total_paginas': 1,
@@ -383,12 +319,8 @@ COMANDOS_CATEGORIAS = {
             ]
         }
     },
-    
-    # ========================================
-    # GENERADOR (2 páginas)
-    # ========================================
     'generador': {
-        'titulo': '️ GENERADOR',
+        'titulo': '⚙️ GENERADOR',
         'total_paginas': 2,
         'paginas': {
             1: [
@@ -405,10 +337,6 @@ COMANDOS_CATEGORIAS = {
             ]
         }
     },
-    
-    # ========================================
-    # EXTRAS
-    # ========================================
     'extras': {
         'titulo': '🧩 EXTRAS',
         'total_paginas': 1,
@@ -425,7 +353,6 @@ COMANDOS_CATEGORIAS = {
 # SECCIÓN 5: FUNCIONES AUXILIARES DEL MENÚ
 # ==============================================================================
 def generar_mensaje_pagina(categoria, pagina):
-    """Genera el mensaje formateado para una página específica"""
     if categoria not in COMANDOS_CATEGORIAS:
         return "❌ Categoría no encontrada"
     
@@ -450,11 +377,9 @@ def generar_mensaje_pagina(categoria, pagina):
         )
     
     mensaje += f"📄 Página {pagina} de {total_paginas}"
-    
     return mensaje
 
 def generar_botones_navegacion(categoria, pagina_actual):
-    """Genera los botones de navegación según la página"""
     if categoria not in COMANDOS_CATEGORIAS:
         return []
     
@@ -473,40 +398,39 @@ def generar_botones_navegacion(categoria, pagina_actual):
     fila_nav = []
     
     if pagina_actual > 1:
-        fila_nav.append(Button.inline("️ Anterior", f'nav_{categoria}_anterior_{pagina_actual}'))
+        fila_nav.append(Button.inline("⬅️ Anterior", f'nav_{categoria}_anterior_{pagina_actual}'))
     
     if pagina_actual < total_paginas:
-        fila_nav.append(Button.inline("Siguiente ️", f'nav_{categoria}_siguiente_{pagina_actual}'))
+        fila_nav.append(Button.inline("Siguiente ➡️", f'nav_{categoria}_siguiente_{pagina_actual}'))
     
     if fila_nav:
         botones_nav.append(fila_nav)
     
     botones_nav.append([
-        Button.inline(" INICIO", b'volver_menu'),
+        Button.inline("🏠 INICIO", b'volver_menu'),
         Button.inline("❌ CERRAR", b'cerrar_menu')
     ])
     
     return botones_nav
 
 def generar_menu_principal_botones():
-    """Genera los botones del menú principal"""
     return [
-        [Button.inline("📄 RENIEC", b'categoria_reniec'), Button.inline(" METADATA", b'categoria_metadata')],
-        [Button.inline("📞 TELEFONIA", b'categoria_telefonia'), Button.inline(" FACIAL", b'categoria_facial')],
-        [Button.inline("🚗 VEHICULOS", b'categoria_vehiculos'), Button.inline(" PERSONAS", b'categoria_personas')],
-        [Button.inline(" DELITOS", b'categoria_delitos'), Button.inline("⚖️ JUSTICIA", b'categoria_justicia')],
+        [Button.inline("📄 RENIEC", b'categoria_reniec'), Button.inline("📇 METADATA", b'categoria_metadata')],
+        [Button.inline("📞 TELEFONIA", b'categoria_telefonia'), Button.inline("👤 FACIAL", b'categoria_facial')],
+        [Button.inline("🚗 VEHICULOS", b'categoria_vehiculos'), Button.inline("👤 PERSONAS", b'categoria_personas')],
+        [Button.inline("⚖️ DELITOS", b'categoria_delitos'), Button.inline("⚖️ JUSTICIA", b'categoria_justicia')],
         [Button.inline("💰 FINANCIERO", b'categoria_financiero'), Button.inline("📑 SUNAT", b'categoria_sunat')],
-        [Button.inline("️ SUNARP", b'categoria_sunarp'), Button.inline("👨‍ FAMILIA", b'categoria_familia')],
+        [Button.inline("📑 SUNARP", b'categoria_sunarp'), Button.inline("👨‍👩‍👧 FAMILIA", b'categoria_familia')],
         [Button.inline("🎓 MINEDU", b'categoria_minedu'), Button.inline("💤 DESCANSOS", b'categoria_descansos')],
-        [Button.inline(" MTC", b'categoria_mtc'), Button.inline("🇷 ARGENTINA", b'categoria_argentina')],
-        [Button.inline(" EXTRAS", b'categoria_extras'), Button.inline("⚙️ GENERADOR", b'categoria_generador')],
+        [Button.inline("🚌 MTC", b'categoria_mtc'), Button.inline("🇦 ARGENTINA", b'categoria_argentina')],
+        [Button.inline("🧩 EXTRAS", b'categoria_extras'), Button.inline("⚙️ GENERADOR", b'categoria_generador')],
         [Button.inline("❓ AYUDA", b'categoria_ayuda'), Button.inline("❌ CERRAR", b'cerrar_menu')]
     ]
 
 # ==============================================================================
 # SECCIÓN 6: HANDLERS DE COMANDOS DEL MENÚ
 # ==============================================================================
-@bot_client.on(events.NewMessage(incoming=True, pattern=r'(?i)^/cmds|^/menu|^/help'))
+@bot_client.on(events.NewMessage(incoming=True, pattern=r'(?i)^/(cmds|menu|help)'))
 async def cmds_handler(event):
     """Handler para el comando /cmds"""
     try:
@@ -528,7 +452,7 @@ async def cmds_handler(event):
         print("   → Ejecutando comando /cmds - Mostrando menú principal")
         
         mensaje_menu = (
-            " **[ MENU DE CONSULTAS ]**\n\n"
+            "📋 **[ MENU DE CONSULTAS ]**\n\n"
             "**PROVENET DOX BOT**\n\n"
             "Selecciona una categoría para ver los comandos disponibles.\n\n"
             "Secciones activas ⇒ 18\n"
@@ -537,7 +461,14 @@ async def cmds_handler(event):
         
         botones = generar_menu_principal_botones()
         
-        await event.reply(mensaje_menu, parse_mode='md', buttons=botones)
+        # 📸 ENVIAR IMAGEN CON EL MENÚ
+        await bot_client.send_file(
+            event.chat_id,
+            'https://i.postimg.cc/28NkH4M0/cmdsiamgen.png',
+            caption=mensaje_menu,
+            parse_mode='md',
+            buttons=botones
+        )
         
     except Exception as e:
         print(f"❌ Error al mostrar menú: {e}")
@@ -546,13 +477,12 @@ async def cmds_handler(event):
 
 @bot_client.on(events.CallbackQuery(pattern=rb'categoria_(\w+)'))
 async def mostrar_categoria_handler(event):
-    """Handler para mostrar categorías"""
     try:
         categoria = event.pattern_match.group(1).decode('utf-8')
         print(f"   → Mostrando categoría: {categoria}")
         
         if categoria not in COMANDOS_CATEGORIAS:
-            await event.answer(" Categoría no disponible aún", alert=True)
+            await event.answer("❌ Categoría no disponible aún", alert=True)
             return
         
         mensaje = generar_mensaje_pagina(categoria, 1)
@@ -568,16 +498,13 @@ async def mostrar_categoria_handler(event):
 
 @bot_client.on(events.CallbackQuery(pattern=rb'nav_(\w+)_(\w+)_(\d+)'))
 async def navegacion_paginas_handler(event):
-    """Handler para navegación de páginas"""
     try:
         categoria = event.pattern_match.group(1).decode('utf-8')
         accion = event.pattern_match.group(2).decode('utf-8')
         pagina_actual = int(event.pattern_match.group(3).decode('utf-8'))
         
-        print(f"   → Navegación: {categoria} - {accion} - página {pagina_actual}")
-        
         if categoria not in COMANDOS_CATEGORIAS:
-            await event.answer(" Categoría no encontrada", alert=True)
+            await event.answer("❌ Categoría no encontrada", alert=True)
             return
         
         total_paginas = COMANDOS_CATEGORIAS[categoria]['total_paginas']
@@ -587,7 +514,7 @@ async def navegacion_paginas_handler(event):
         elif accion == 'siguiente':
             nueva_pagina = pagina_actual + 1
         else:
-            await event.answer("️ Acción inválida", alert=True)
+            await event.answer("⚠️ Acción inválida", alert=True)
             return
         
         if nueva_pagina < 1 or nueva_pagina > total_paginas:
@@ -601,15 +528,13 @@ async def navegacion_paginas_handler(event):
         await event.answer(f"Página {nueva_pagina} de {total_paginas}", alert=False)
         
     except Exception as e:
-        print(f" Error en navegación: {e}")
+        print(f"❌ Error en navegación: {e}")
         import traceback
         traceback.print_exc()
 
 @bot_client.on(events.CallbackQuery(pattern=b'volver_menu'))
 async def volver_menu_handler(event):
-    """Handler para volver al menú principal"""
     try:
-        print("   → Volviendo al menú principal")
         mensaje_menu = (
             "📋 **[ MENU DE CONSULTAS ]**\n\n"
             "**AXEL DOX BOT**\n\n"
@@ -619,20 +544,17 @@ async def volver_menu_handler(event):
         )
         
         botones = generar_menu_principal_botones()
-        
         await event.edit(mensaje_menu, parse_mode='md', buttons=botones)
         await event.answer("🔙 Menú principal", alert=False)
         
     except Exception as e:
-        print(f" Error al volver al menú: {e}")
+        print(f"❌ Error al volver al menú: {e}")
         import traceback
         traceback.print_exc()
 
 @bot_client.on(events.CallbackQuery(pattern=b'cerrar_menu'))
 async def cerrar_menu_handler(event):
-    """Handler para cerrar menú"""
     try:
-        print("   → Cerrando menú")
         await event.edit("❌ **Menú cerrado**\n\nEscribe /cmds o /menu para volver a abrirlo.")
         await event.answer("Menú cerrado", alert=False)
     except Exception as e:
@@ -659,6 +581,9 @@ async def bot_message_handler(event):
         print(f"   Texto: {texto[:80]}...")
         print(f"   Tiene media: {bool(event.media)}")
         
+        # ✅ IGNORAR COMANDOS DEL MENÚ PARA QUE NO DIGA "PROCESANDO..." NI SE ENVÍE A LA CUENTA PRINCIPAL
+        if texto.lower().startswith('/cmds') or texto.lower().startswith('/menu') or texto.lower().startswith('/help'):
+            return
         
         # ==============================================================================
         # PROCESAMIENTO DE CUENTA PRINCIPAL
@@ -666,7 +591,6 @@ async def bot_message_handler(event):
         if sender_id == main_account_id:
             print("   → Es de la CUENTA PRINCIPAL")
             
-            # CASO 1: Mensaje de texto con "RESULTADO PARA:"
             if "RESULTADO PARA:" in texto and not event.media:
                 print("   → Mensaje de texto de resultado")
                 lineas = texto.split("\n\n")
@@ -675,100 +599,53 @@ async def bot_message_handler(event):
                         chat_destino = int(lineas[0].replace("RESULTADO PARA:", "").strip())
                         respuesta_texto = "\n\n".join(lineas[1:])
                         
-                        print(f"   → Chat destino: {chat_destino}")
-                        print(f"   → Texto completo ({len(respuesta_texto)} chars): {respuesta_texto[:200]}...")
-                        
                         if len(respuesta_texto) > 4000:
-                            print(f"   → Texto largo, dividiendo en partes...")
                             partes = [respuesta_texto[i:i+4000] for i in range(0, len(respuesta_texto), 4000)]
                             for idx, parte in enumerate(partes):
                                 await bot_client.send_message(chat_destino, parte)
-                                print(f"   ✅ Parte {idx+1}/{len(partes)} enviada")
                                 await asyncio.sleep(0.3)
                         else:
                             await bot_client.send_message(chat_destino, respuesta_texto)
-                            print(f"   ✅ Texto completo enviado")
-                        
-                        if chat_destino not in resultados_enviados:
-                            resultados_enviados[chat_destino] = {
-                                'texto': True,
-                                'media': False,
-                                'time': asyncio.get_event_loop().time()
-                            }
-                        else:
-                            resultados_enviados[chat_destino]['texto'] = True
                         
                         if chat_destino in processing_messages:
                             msg_id = processing_messages[chat_destino]
                             try:
-                                await bot_client.edit_message(
-                                    chat_destino, 
-                                    msg_id, 
-                                    "✅ RESULTADO ENVIADO CORRECTAMENTE"
-                                )
-                                print(f"   ✅ Mensaje 'Procesando...' editado exitosamente")
+                                await bot_client.edit_message(chat_destino, msg_id, "✅ RESULTADO ENVIADO CORRECTAMENTE")
                             except Exception as e:
-                                print(f"   ️ Error al editar mensaje: {e}")
-                                import traceback
-                                traceback.print_exc()
+                                print(f"⚠️ Error al editar mensaje: {e}")
                         
                         await asyncio.sleep(10)
                         if chat_destino in processing_messages:
                             del processing_messages[chat_destino]
-                            print(f"   ✅ Limpiado processing_messages para {chat_destino}")
                         
                     except Exception as e:
-                        print(f"   ❌ Error al procesar resultado: {e}")
-                        import traceback
-                        traceback.print_exc()
+                        print(f"❌ Error al procesar resultado: {e}")
                 return
             
-            # CASO 2: Mensaje con IMAGEN/PDF
             elif event.media:
                 print("   → Media recibido de cuenta principal")
-                
                 chats_pendientes = list(processing_messages.keys())
                 
                 if not chats_pendientes:
-                    print("   ⚠️ No hay chats pendientes para recibir media")
                     return
                 
                 for chat_id_pendiente in chats_pendientes:
-                    print(f"   → Reenviando media a {chat_id_pendiente}")
                     try:
                         await bot_client.send_file(chat_id_pendiente, event.media, caption=texto)
-                        print(f"   ✅ Media + texto reenviados juntos")
-                        
-                        if chat_id_pendiente not in resultados_enviados:
-                            resultados_enviados[chat_id_pendiente] = {
-                                'texto': True,
-                                'media': True,
-                                'time': asyncio.get_event_loop().time()
-                            }
-                        else:
-                            resultados_enviados[chat_id_pendiente]['media'] = True
                         
                         if chat_id_pendiente in processing_messages:
                             msg_id = processing_messages[chat_id_pendiente]
                             try:
-                                await bot_client.edit_message(
-                                    chat_id_pendiente, 
-                                    msg_id, 
-                                    "✅ RESULTADO ENVIADO CORRECTAMENTE"
-                                )
-                                print(f"   ✅ Mensaje editado para {chat_id_pendiente}")
+                                await bot_client.edit_message(chat_id_pendiente, msg_id, "✅ RESULTADO ENVIADO CORRECTAMENTE")
                             except Exception as e:
-                                print(f"   ️ Error al editar mensaje: {e}")
-                        
+                                print(f"⚠️ Error al editar mensaje: {e}")
                     except Exception as e:
-                        print(f"   ⚠️ Error al reenviar media: {e}")
+                        print(f"⚠️ Error al reenviar media: {e}")
                 
                 await asyncio.sleep(10)
                 for chat_id_pendiente in chats_pendientes:
                     if chat_id_pendiente in processing_messages:
                         del processing_messages[chat_id_pendiente]
-                        print(f"   ✅ Limpiado processing_messages para {chat_id_pendiente}")
-                
                 return
         
         # ==============================================================================
@@ -791,16 +668,21 @@ async def bot_message_handler(event):
         
         print(f"✅ Usuario {sender_id} tiene acceso verificado")
         
+        # 🛡️ ANTI-SPAM: Si ya tiene una consulta en proceso, avisarle
         if chat_id in processing_messages:
-            print(f"   ⚠️ Ya hay un procesamiento en curso para {chat_id}, ignorando")
+            print(f"   ⚠️ Ya hay un procesamiento en curso para {chat_id}, notificando al usuario")
+            await event.reply(
+                "⏳ <b>Ya tienes una consulta en ejecución.</b>\n\n"
+                "Por favor, espera a que termine antes de enviar otro comando.",
+                parse_mode='html'
+            )
             return
         
-        processing_msg = await event.reply(" Procesando...")
+        processing_msg = await event.reply("⏳ Procesando...")
         processing_messages[chat_id] = processing_msg.id
         print(f"   → Guardado chat {chat_id} con msg_id {processing_msg.id}")
 
         if event.media:
-            print(f"   → Media detectado, enviando texto + media a cuenta principal")
             caption_principal = f"PROCESAR PARA: {chat_id}\n\n{texto}"
             await bot_client.send_file(MAIN_ACCOUNT, event.media, caption=caption_principal)
         else:
@@ -823,157 +705,96 @@ async def user_receive_handler(event):
         sender_id = event.sender_id
         texto = event.raw_text or event.text or ""
         
-        print(f"\n{'='*50}")
-        print(f" [USER] Mensaje recibido")
-        print(f"   Sender ID: {sender_id}")
-        print(f"   Texto: {texto[:100]}...")
-        
-        if bot_id is None:
-            print("   ⚠️ bot_id es None, ignorando")
+        if bot_id is None or sender_id != bot_id:
             return
-        
-        if sender_id != bot_id:
-            print(f"   ️ Ignorado: sender_id ({sender_id}) != bot_id ({bot_id})")
-            return
-        
-        print("   ✅ Paso 1: Viene del bot")
         
         if "PROCESAR PARA:" not in texto:
-            print(f"   ⚠️ Ignorado: no contiene 'PROCESAR PARA:'")
             return
-        
-        print("   ✅ Paso 2: Es para procesar")
         
         try:
             primera_linea = texto.split("\n\n")[0]
             chat_destino = int(primera_linea.replace("PROCESAR PARA:", "").strip())
-            print(f"   ✅ Paso 3: Chat destino = {chat_destino}")
         except Exception as e:
-            print(f"    Paso 3 falló: {e}")
             return
         
         lineas = texto.split("\n\n")
         if len(lineas) < 2:
-            print("   ️ Formato incorrecto (menos de 2 líneas)")
             return
         
         texto_original = lineas[1].strip()
-        print(f"   ✅ Texto original: {texto_original}")
-        
         partes = texto_original.split()
         comando_guia = partes[0].replace('/', '').lower() if partes else ""
-        
         numero_buscar = partes[1] if len(partes) > 1 else ""
-        print(f"   ✅ Comando guía: '{comando_guia}' | Número a buscar: '{numero_buscar}'")
         
-        print(f"   → Enviando a Provenet...")
         try:
             if event.media:
-                print(f"   → Media detectado, enviando texto + media a Provenet")
                 msg_enviado = await user_client.send_file(CODE_BOT, event.media, caption=texto_original)
             else:
                 msg_enviado = await user_client.send_message(CODE_BOT, texto_original)
-            print("   ✅ Enviado a Provenet")
             
             msg_enviado_id = msg_enviado.id
             msg_enviado_time = msg_enviado.date
-            print(f"   → Mensaje enviado ID: {msg_enviado_id}, Time: {msg_enviado_time}")
             
         except Exception as e:
-            print(f"   ❌ Error al enviar a Provenet: {e}")
-            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n Error: {e}")
+            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n❌ Error: {e}")
             return
         
-        print("   ⏳ Iniciando espera progresiva (máx 35 segundos)...")
+        # ⏱️ TIEMPO MÁXIMO DE ESPERA: 45 SEGUNDOS (EXACTAMENTE COMO PEDISTE)
+        print("   ⏳ Iniciando espera progresiva (máx 45 segundos)...")
         
         mensajes_validos = []
         palabras_basura = ['espera', 'consultando', 'cargando', 'procesando', 'generando', 'por favor']
         
-        tiempo_maximo = 35
+        tiempo_maximo = 45  # <-- CORRECCIÓN: 45 segundos exactos
         intervalo_inicial = 8
         intervalo_reintento = 4
         tiempo_esperado = 0
         
         while tiempo_esperado < tiempo_maximo:
-            if tiempo_esperado == 0:
-                espera = intervalo_inicial
-            else:
-                espera = intervalo_reintento
-            
-            print(f"   ⏳ Esperando {espera} segundos... (total: {tiempo_esperado}s/{tiempo_maximo}s)")
+            espera = intervalo_inicial if tiempo_esperado == 0 else intervalo_reintento
             await asyncio.sleep(espera)
             tiempo_esperado += espera
             
-            print(f"   🔍 Verificando respuestas después de {tiempo_esperado}s...")
-            
             try:
                 mensajes = await user_client.get_messages(CODE_BOT, limit=50)
-                print(f"   → {len(mensajes)} mensajes encontrados")
-                
                 mensajes_validos = []
                 
-                for i, msg in enumerate(mensajes):
+                for msg in mensajes:
                     msg_text = msg.text or msg.raw_text or ""
                     msg_has_media = msg.media is not None
                     msg_date = msg.date
                     
-                    print(f"      Mensaje {i+1}: ID={msg.id}, text='{msg_text[:40]}...', media={msg_has_media}, date={msg_date}")
-                    
-                    if msg_date <= msg_enviado_time:
-                        print(f"         → Ignorado (es anterior o igual al enviado)")
-                        continue
-                    
-                    if msg.id == msg_enviado_id:
-                        print(f"         → Ignorado (es el que enviamos)")
+                    if msg_date <= msg_enviado_time or msg.id == msg_enviado_id:
                         continue
                     
                     if msg_text and any(x in msg_text.lower() for x in palabras_basura):
-                        print(f"         → Ignorado (es basura)")
                         continue
                     
                     if numero_buscar:
                         if numero_buscar[:6] not in msg_text and numero_buscar not in msg_text:
-                            print(f"         → Ignorado (no contiene el número {numero_buscar})")
                             continue
                     
                     if msg_text and comando_guia and comando_guia in msg_text.lower():
                         mensajes_validos.append(msg)
-                        print(f"         ✅ VÁLIDO (texto): Agregado")
                     elif msg_has_media:
                         mensajes_validos.append(msg)
-                        print(f"         ✅ VÁLIDO (media): Agregado")
-                
-                print(f"   → Mensajes válidos encontrados: {len(mensajes_validos)}")
                 
                 if len(mensajes_validos) > 0:
-                    print(f"   ✅ ¡Respuesta detectada después de {tiempo_esperado}s!")
                     break
                 
             except Exception as e:
-                print(f"   ⚠️ Error al verificar: {e}")
                 continue
         
         mensajes_validos.sort(key=lambda x: x.date)
         
         if not mensajes_validos:
-            print(f"   ️ No se encontró respuesta válida después de {tiempo_maximo}s")
-            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n️ ERROR: No se recibió respuesta en {tiempo_maximo} segundos. posiblemente no se encuentra datos, si crees que es un error intente nuevamente.")
-            print("   ✅ Mensaje de timeout enviado al bot")
+            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n⚠️ ERROR: No se recibió respuesta en {tiempo_maximo} segundos. Posiblemente no se encuentran datos, si crees que es un error intente nuevamente.")
             return
         
-        print(f"   📤 Enviando {len(mensajes_validos)} mensajes al bot Axel...")
         try:
             for idx, msg in enumerate(mensajes_validos):
-                print(f"   → Enviando mensaje {idx+1}/{len(mensajes_validos)}")
-                
                 if msg.text and msg.media:
-                    if idx == 0:
-                        caption_enviar = f"RESULTADO PARA: {chat_destino}\n\n{msg.text}"
-                    else:
-                        caption_enviar = msg.text
-                    
-                    print(f"      → Enviando media con caption")
-                    
+                    caption_enviar = f"RESULTADO PARA: {chat_destino}\n\n{msg.text}" if idx == 0 else msg.text
                     if len(caption_enviar) > 4000:
                         partes = [caption_enviar[i:i+4000] for i in range(0, len(caption_enviar), 4000)]
                         for i, parte in enumerate(partes):
@@ -985,16 +806,8 @@ async def user_receive_handler(event):
                     else:
                         await user_client.send_file(BOT_USERNAME, msg.media, caption=caption_enviar)
                     
-                    print(f"      ✅ Media + texto enviados juntos")
-                    
                 elif msg.text:
-                    if idx == 0:
-                        mensaje_enviar = f"RESULTADO PARA: {chat_destino}\n\n{msg.text}"
-                    else:
-                        mensaje_enviar = msg.text
-                    
-                    print(f"      → Enviando texto")
-                    
+                    mensaje_enviar = f"RESULTADO PARA: {chat_destino}\n\n{msg.text}" if idx == 0 else msg.text
                     if len(mensaje_enviar) > 4000:
                         partes = [mensaje_enviar[i:i+4000] for i in range(0, len(mensaje_enviar), 4000)]
                         for parte in partes:
@@ -1002,32 +815,20 @@ async def user_receive_handler(event):
                             await asyncio.sleep(0.3)
                     else:
                         await user_client.send_message(BOT_USERNAME, mensaje_enviar)
-                    print(f"      ✅ Texto enviado")
                     
                 elif msg.media:
-                    print(f"      → Enviando solo media")
                     if idx == 0:
-                        caption_enviar = f"RESULTADO PARA: {chat_destino}"
-                        await user_client.send_file(BOT_USERNAME, msg.media, caption=caption_enviar)
+                        await user_client.send_file(BOT_USERNAME, msg.media, caption=f"RESULTADO PARA: {chat_destino}")
                     else:
                         await user_client.forward_messages(BOT_USERNAME, msg)
-                    print(f"      ✅ Media enviado")
                 
                 await asyncio.sleep(0.3)
                 
-            print(f"   ✅ TODOS los mensajes ({len(mensajes_validos)}) enviados al bot")
-            
         except Exception as e:
-            print(f"   ❌ Error al enviar al bot: {e}")
-            import traceback
-            traceback.print_exc()
-        
-        print(f"{'='*50}\n")
-        
+            print(f"❌ Error al enviar al bot: {e}")
+
     except Exception as e:
         print(f"❌ [USER] ERROR GENERAL: {e}")
-        import traceback
-        traceback.print_exc()
 
 # ==============================================================================
 # SECCIÓN 9: FUNCIÓN MAIN
@@ -1036,10 +837,10 @@ async def main():
     global bot_id, main_account_id
     
     print("\n" + "="*60)
-    print(" INICIANDO AXEL BOT")
+    print("🚀 INICIANDO AXEL BOT")
     print("="*60)
     
-    print(" Iniciando cuenta principal...")
+    print("📱 Iniciando cuenta principal...")
     await user_client.start()
     me = await user_client.get_me()
     main_account_id = me.id
@@ -1067,4 +868,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("\n Bot detenido.")
+        print("\n🛑 Bot detenido.")
