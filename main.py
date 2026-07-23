@@ -1017,7 +1017,7 @@ async def user_receive_handler(event):
                 # 🔧 Ordenar por fecha para procesar en orden
                 mensajes_validos_temp.sort(key=lambda x: x.date)
                 
-                # 🔧 Verificar si hay nuevos mensajes válidos que no teníamos antes
+                #  Verificar si hay nuevos mensajes válidos que no teníamos antes
                 nuevos_ids = [msg.id for msg in mensajes_validos_temp if msg.id not in [m.id for m in mensajes_validos]]
                 
                 if nuevos_ids:
@@ -1048,39 +1048,29 @@ async def user_receive_handler(event):
         
         if not mensajes_validos:
             print(f"   ⚠️ No se encontró respuesta válida después de {tiempo_maximo}s")
-            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n⚠️ ERROR: No se recibió respuesta en {tiempo_maximo} segundos. posiblemente no se encuentra datos, si crees que es un error intente nuevamente.")
+            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n️ ERROR: No se recibió respuesta en {tiempo_maximo} segundos. posiblemente no se encuentra datos, si crees que es un error intente nuevamente.")
             print("   ✅ Mensaje de timeout enviado al bot")
             return
         
         print(f"    Total de mensajes válidos capturados: {len(mensajes_validos)}")
         try:
-            # 🔧 CONCATENAR TODOS los mensajes en uno solo
-            if mensajes_validos:
-                texto_final = f"RESULTADO PARA: {chat_destino}\n\n"
+            # ✅ ENVIAR CADA MENSAJE TAL CUAL VIENE DE PROVENET (IGUALITO)
+            for msg in mensajes_validos:
+                header = f"RESULTADO PARA: {chat_destino}\n\n"
                 
-                for idx, msg in enumerate(mensajes_validos):
-                    if msg.text:
-                        texto_final += msg.text
-                        if idx < len(mensajes_validos) - 1:
-                            texto_final += "\n\n" + "─" * 40 + "\n\n"
+                if msg.media:
+                    # Si tiene foto/media, enviar CON el texto juntos (tal cual viene de ProveNet)
+                    texto_completo = header + (msg.text or "")
+                    await user_client.send_file(BOT_USERNAME, msg.media, caption=texto_completo)
+                    print(f"   ✅ Enviado: media + texto juntos")
+                elif msg.text:
+                    # Si es solo texto, enviar solo texto
+                    await user_client.send_message(BOT_USERNAME, header + msg.text)
+                    print(f"   ✅ Enviado: solo texto")
                 
-                # Enviar todo el texto completo
-                if len(texto_final) > 4000:
-                    partes = [texto_final[i:i+4000] for i in range(0, len(texto_final), 4000)]
-                    for i, parte in enumerate(partes):
-                        await user_client.send_message(BOT_USERNAME, parte)
-                        await asyncio.sleep(0.3)
-                else:
-                    await user_client.send_message(BOT_USERNAME, texto_final)
-                    print(f"      ✅ Texto completo enviado ({len(texto_final)} chars)")
-                
-                # Si hay media, enviarlo también
-                for msg in mensajes_validos:
-                    if msg.media:
-                        await user_client.send_file(BOT_USERNAME, msg.media)
-                        await asyncio.sleep(0.3)
+                await asyncio.sleep(0.3)
             
-            print(f"   ✅ TODOS los mensajes ({len(mensajes_validos)}) enviados al bot")
+            print(f"   ✅ TODOS los mensajes ({len(mensajes_validos)}) enviados al bot IGUALITO como vienen")
             
         except Exception as e:
             print(f"   ❌ Error al enviar al bot: {e}")
