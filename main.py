@@ -871,7 +871,7 @@ async def user_receive_handler(event):
             return
         
         if sender_id != bot_id:
-            print(f"   ️ Ignorado: sender_id ({sender_id}) != bot_id ({bot_id})")
+            print(f"   ❌ Ignorado: sender_id ({sender_id}) != bot_id ({bot_id})")
             return
         
         print("   ✅ Paso 1: Viene del bot")
@@ -887,12 +887,12 @@ async def user_receive_handler(event):
             chat_destino = int(primera_linea.replace("PROCESAR PARA:", "").strip())
             print(f"   ✅ Paso 3: Chat destino = {chat_destino}")
         except Exception as e:
-            print(f"    Paso 3 falló: {e}")
+            print(f"   ❌ Paso 3 falló: {e}")
             return
         
         lineas = texto.split("\n\n")
         if len(lineas) < 2:
-            print("   ️ Formato incorrecto (menos de 2 líneas)")
+            print("   ❌ Formato incorrecto (menos de 2 líneas)")
             return
         
         texto_original = lineas[1].strip()
@@ -920,26 +920,21 @@ async def user_receive_handler(event):
             
         except Exception as e:
             print(f"   ❌ Error al enviar a Provenet: {e}")
-            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n Error: {e}")
+            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n❌ Error: {e}")
             return
         
-        print("   ⏳ Iniciando espera progresiva (máx 45 segundos)...")
+        print("   ⏳ Iniciando espera (máx 45 segundos, verifica cada 3s)...")
         
         mensajes_validos = []
         palabras_basura = ['espera', 'consultando', 'cargando', 'procesando', 'generando', 'por favor']
         
-        tiempo_maximo = 45  # 🔧 AUMENTADO a 45 segundos
-        intervalo_inicial = 5  # 🔧 REDUCIDO a 5 segundos
-        intervalo_reintento = 3  # 🔧 REDUCIDO a 3 segundos
+        tiempo_maximo = 45
+        intervalo_verificacion = 3  #  VERIFICA CADA 3 SEGUNDOS FIJOS
         tiempo_esperado = 0
-        mensajes_previos_count = 0
         tiempo_sin_nuevos_mensajes = 0
         
         while tiempo_esperado < tiempo_maximo:
-            if tiempo_esperado == 0:
-                espera = intervalo_inicial
-            else:
-                espera = intervalo_reintento
+            espera = intervalo_verificacion  # 🔧 Siempre 3 segundos
             
             print(f"   ⏳ Esperando {espera} segundos... (total: {tiempo_esperado}s/{tiempo_maximo}s)")
             await asyncio.sleep(espera)
@@ -1027,9 +1022,8 @@ async def user_receive_handler(event):
                 
                 if nuevos_ids:
                     print(f"   ✅ Detectados {len(nuevos_ids)} NUEVOS mensajes válidos")
-                    mensajes_previos_count = len(mensajes_validos)
                     mensajes_validos = mensajes_validos_temp.copy()
-                    tiempo_sin_nuevos_mensajes = 0  # 🔧 Resetear contador
+                    tiempo_sin_nuevos_mensajes = 0  #  Resetear contador
                 else:
                     tiempo_sin_nuevos_mensajes += espera
                     print(f"   ⏱️ Sin nuevos mensajes por {tiempo_sin_nuevos_mensajes}s")
@@ -1039,7 +1033,7 @@ async def user_receive_handler(event):
                     print(f"   ✅ Ya no llegan más mensajes después de {tiempo_sin_nuevos_mensajes}s")
                     break
                 
-                # 🔧 Timeout máximo
+                #  Timeout máximo
                 if tiempo_esperado >= tiempo_maximo:
                     print(f"    Timeout de {tiempo_maximo}s alcanzado")
                     break
@@ -1053,12 +1047,12 @@ async def user_receive_handler(event):
         mensajes_validos.sort(key=lambda x: x.date)
         
         if not mensajes_validos:
-            print(f"   ️ No se encontró respuesta válida después de {tiempo_maximo}s")
-            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n️ ERROR: No se recibió respuesta en {tiempo_maximo} segundos. posiblemente no se encuentra datos, si crees que es un error intente nuevamente.")
+            print(f"   ⚠️ No se encontró respuesta válida después de {tiempo_maximo}s")
+            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n⚠️ ERROR: No se recibió respuesta en {tiempo_maximo} segundos. posiblemente no se encuentra datos, si crees que es un error intente nuevamente.")
             print("   ✅ Mensaje de timeout enviado al bot")
             return
         
-        print(f"   📤 Total de mensajes válidos capturados: {len(mensajes_validos)}")
+        print(f"    Total de mensajes válidos capturados: {len(mensajes_validos)}")
         try:
             # 🔧 CONCATENAR TODOS los mensajes en uno solo
             if mensajes_validos:
@@ -1096,7 +1090,7 @@ async def user_receive_handler(event):
         print(f"{'='*50}\n")
         
     except Exception as e:
-        print(f" [USER] ERROR GENERAL: {e}")
+        print(f"❌ [USER] ERROR GENERAL: {e}")
         import traceback
         traceback.print_exc()
 
