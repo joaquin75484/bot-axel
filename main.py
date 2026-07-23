@@ -851,7 +851,7 @@ async def bot_message_handler(event):
         traceback.print_exc()
 
 # ==============================================================================
-# SECCIÓN 8: HANDLER DE CUENTA PRINCIPAL (CORREGIDO)
+# SECCIÓN 8: HANDLER DE CUENTA PRINCIPAL (CORREGIDO - SOLO ESTA PARTE)
 # ==============================================================================
 @user_client.on(events.NewMessage(incoming=True))
 async def user_receive_handler(event):
@@ -946,10 +946,11 @@ async def user_receive_handler(event):
             print(f"   🔍 Verificando respuestas después de {tiempo_esperado}s...")
             
             try:
-                mensajes = await user_client.get_messages(CODE_BOT, limit=50)
+                mensajes = await user_client.get_messages(CODE_BOT, limit=100)  # 🔧 AUMENTADO a 100
                 print(f"   → {len(mensajes)} mensajes encontrados")
                 
                 mensajes_validos = []
+                texto_completo_respuesta = ""  # 🔧 NUEVO: Para acumular todo
                 
                 for i, msg in enumerate(mensajes):
                     msg_text = msg.text or msg.raw_text or ""
@@ -992,8 +993,8 @@ async def user_receive_handler(event):
                         es_valido = True
                         print(f"         ✅ VÁLIDO (media): Agregado")
                     
-                    # 2. Si el texto es grande (más de 80 chars), es data real
-                    if not es_valido and len(msg_text) > 80:
+                    # 2. Si el texto es grande (más de 50 chars), es data real
+                    if not es_valido and len(msg_text) > 50:  # 🔧 REDUCIDO a 50 para capturar más
                         es_valido = True
                         print(f"         ✅ VÁLIDO (texto largo): Agregado")
                     
@@ -1002,15 +1003,28 @@ async def user_receive_handler(event):
                         es_valido = True
                         print(f"         ✅ VÁLIDO (nombre '{numero_buscar}' encontrado): Agregado")
                     
-                    # 4. Si contiene el comando guía
+                    # 4. Si contiene patrones de datos reales (DNI:, APELLIDOS:, etc.)
+                    if not es_valido:
+                        patrones_datos = ['dni:', 'apellidos:', 'nombres:', 'busqueda:', 'total:']
+                        if any(patron in msg_text.lower() for patron in patrones_datos):
+                            es_valido = True
+                            print(f"         ✅ VÁLIDO (contiene datos): Agregado")
+                    
+                    # 5. Si contiene el comando guía
                     if not es_valido and comando_guia and comando_guia in msg_text.lower():
                         es_valido = True
                         print(f"         ✅ VÁLIDO (comando '{comando_guia}' encontrado): Agregado")
                     
                     if es_valido:
                         mensajes_validos.append(msg)
+                        texto_completo_respuesta += "\n\n" + msg_text if texto_completo_respuesta else msg_text  # 🔧 Acumular todo
                 
                 print(f"   → Mensajes válidos encontrados: {len(mensajes_validos)}")
+                
+                # 🔧 Si hay múltiples mensajes válidos, esperar un poco más para capturar todos
+                if len(mensajes_validos) > 0 and tiempo_esperado < tiempo_maximo - 5:
+                    print(f"   ⏳ Detectados {len(mensajes_validos)} mensajes, esperando más...")
+                    continue  # 🔧 Continuar esperando por si hay más mensajes
                 
                 if len(mensajes_validos) > 0:
                     print(f"   ✅ ¡Respuesta detectada después de {tiempo_esperado}s!")
@@ -1030,58 +1044,33 @@ async def user_receive_handler(event):
         
         print(f"   📤 Enviando {len(mensajes_validos)} mensajes al bot Axel...")
         try:
-            for idx, msg in enumerate(mensajes_validos):
-                print(f"   → Enviando mensaje {idx+1}/{len(mensajes_validos)}")
+            # 🔧 OPCIÓN 1: Enviar TODO concatenado en un solo mensaje
+            if mensajes_validos:
+                # Concatenar todos los textos
+                texto_final = f"RESULTADO PARA: {chat_destino}\n\n"
                 
-                if msg.text and msg.media:
-                    if idx == 0:
-                        caption_enviar = f"RESULTADO PARA: {chat_destino}\n\n{msg.text}"
-                    else:
-                        caption_enviar = msg.text
-                    
-                    print(f"      → Enviando media con caption")
-                    
-                    if len(caption_enviar) > 4000:
-                        partes = [caption_enviar[i:i+4000] for i in range(0, len(caption_enviar), 4000)]
-                        for i, parte in enumerate(partes):
-                            if i == 0:
-                                await user_client.send_file(BOT_USERNAME, msg.media, caption=parte)
-                            else:
-                                await user_client.send_message(BOT_USERNAME, parte)
-                                await asyncio.sleep(0.3)
-                    else:
-                        await user_client.send_file(BOT_USERNAME, msg.media, caption=caption_enviar)
-                    
-                    print(f"      ✅ Media + texto enviados juntos")
-                    
-                elif msg.text:
-                    if idx == 0:
-                        mensaje_enviar = f"RESULTADO PARA: {chat_destino}\n\n{msg.text}"
-                    else:
-                        mensaje_enviar = msg.text
-                    
-                    print(f"      → Enviando texto")
-                    
-                    if len(mensaje_enviar) > 4000:
-                        partes = [mensaje_enviar[i:i+4000] for i in range(0, len(mensaje_enviar), 4000)]
-                        for parte in partes:
-                            await user_client.send_message(BOT_USERNAME, parte)
-                            await asyncio.sleep(0.3)
-                    else:
-                        await user_client.send_message(BOT_USERNAME, mensaje_enviar)
-                    print(f"      ✅ Texto enviado")
-                    
-                elif msg.media:
-                    print(f"      → Enviando solo media")
-                    if idx == 0:
-                        caption_enviar = f"RESULTADO PARA: {chat_destino}"
-                        await user_client.send_file(BOT_USERNAME, msg.media, caption=caption_enviar)
-                    else:
-                        await user_client.forward_messages(BOT_USERNAME, msg)
-                    print(f"      ✅ Media enviado")
+                for idx, msg in enumerate(mensajes_validos):
+                    if msg.text:
+                        texto_final += msg.text
+                        if idx < len(mensajes_validos) - 1:  # Agregar separador si no es el último
+                            texto_final += "\n\n" + "─" * 40 + "\n\n"
                 
-                await asyncio.sleep(0.3)
+                # Enviar todo el texto completo
+                if len(texto_final) > 4000:
+                    partes = [texto_final[i:i+4000] for i in range(0, len(texto_final), 4000)]
+                    for i, parte in enumerate(partes):
+                        await user_client.send_message(BOT_USERNAME, parte)
+                        await asyncio.sleep(0.3)
+                else:
+                    await user_client.send_message(BOT_USERNAME, texto_final)
+                    print(f"      ✅ Texto completo enviado ({len(texto_final)} chars)")
                 
+                # Si hay media, enviarlo también
+                for msg in mensajes_validos:
+                    if msg.media:
+                        await user_client.send_file(BOT_USERNAME, msg.media)
+                        await asyncio.sleep(0.3)
+            
             print(f"   ✅ TODOS los mensajes ({len(mensajes_validos)}) enviados al bot")
             
         except Exception as e:
