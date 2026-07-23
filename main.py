@@ -969,9 +969,14 @@ async def user_receive_handler(event):
                         print(f"         → Ignorado (es basura)")
                         continue
                     
-                    if numero_buscar:
+                    # ✅ Para búsquedas por nombre, solo verifica que haya una respuesta
+                    if numero_buscar and len(numero_buscar) > 10:
+                        # Es un nombre largo, verifica case-insensitive
+                        if numero_buscar.lower()[:6] not in msg_text.lower() and numero_buscar.lower() not in msg_text.lower():
+                            continue
+                    elif numero_buscar and len(numero_buscar) <= 10:
+                        # Es un DNI o número corto, sé más estricto
                         if numero_buscar[:6] not in msg_text and numero_buscar not in msg_text:
-                            print(f"         → Ignorado (no contiene el número {numero_buscar})")
                             continue
                     
                     if msg_text and comando_guia and comando_guia in msg_text.lower():
