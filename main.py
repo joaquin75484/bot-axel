@@ -969,22 +969,24 @@ async def user_receive_handler(event):
                         print(f"         → Ignorado (es basura)")
                         continue
                     
-                    # ✅ Para búsquedas por nombre, solo verifica que haya una respuesta
-                    if numero_buscar and len(numero_buscar) > 10:
-                        # Es un nombre largo, verifica case-insensitive
-                        if numero_buscar.lower()[:6] not in msg_text.lower() and numero_buscar.lower() not in msg_text.lower():
-                            continue
-                    elif numero_buscar and len(numero_buscar) <= 10:
-                        # Es un DNI o número corto, sé más estricto
-                        if numero_buscar[:6] not in msg_text and numero_buscar not in msg_text:
-                            continue
-                    
-                    if msg_text and comando_guia and comando_guia in msg_text.lower():
-                        mensajes_validos.append(msg)
-                        print(f"         ✅ VÁLIDO (texto): Agregado")
-                    elif msg_has_media:
+                    # ✅ VALIDACIÓN CORREGIDA: Case-insensitive y más inteligente
+                    if msg_has_media:
                         mensajes_validos.append(msg)
                         print(f"         ✅ VÁLIDO (media): Agregado")
+                    elif msg_text:
+                        # 1. Si es búsqueda por nombre (más de 4 letras), busca sin importar mayúsculas
+                        if numero_buscar and len(numero_buscar) > 4:
+                            if numero_buscar.lower() in msg_text.lower():
+                                mensajes_validos.append(msg)
+                                print(f"         ✅ VÁLIDO (nombre '{numero_buscar}' encontrado): Agregado")
+                        # 2. Si es DNI/número corto, o si el comando guía está en la respuesta
+                        elif comando_guia and comando_guia in msg_text.lower():
+                            mensajes_validos.append(msg)
+                            print(f"         ✅ VÁLIDO (comando '{comando_guia}' encontrado): Agregado")
+                        # 3. Fallback: si el texto es largo y ya pasó los filtros de basura, es la data
+                        elif len(msg_text) > 50:
+                            mensajes_validos.append(msg)
+                            print(f"         ✅ VÁLIDO (texto largo con datos): Agregado")
                 
                 print(f"   → Mensajes válidos encontrados: {len(mensajes_validos)}")
                 
