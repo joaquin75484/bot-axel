@@ -81,13 +81,13 @@ def verificar_acceso(user_id):
                         print(f"✅ Usuario {user_id} tiene acceso válido hasta {fecha_exp}")
                         return True
                     else:
-                        print(f"⚠️ Usuario {user_id} acceso expiró el {fecha_exp}")
+                        print(f"️ Usuario {user_id} acceso expiró el {fecha_exp}")
                         return False
                 else:
                     print(f"⚠️ No se encontró 'expiracion' en los datos: {data}")
                     return False
             except Exception as json_error:
-                print(f"❌ Error al parsear JSON: {json_error}")
+                print(f" Error al parsear JSON: {json_error}")
                 return False
         else:
             print(f"⚠️ Cloudflare devolvió status {response.status_code}")
@@ -122,11 +122,11 @@ COMANDOS_CATEGORIAS = {
     # METADATA
     # ========================================
     'metadata': {
-        'titulo': '📇 METADATA',
+        'titulo': ' METADATA',
         'total_paginas': 1,
         'paginas': {
             1: [
-                {'titulo': '📍 METADATA COMPLETA [DNI + PDF]', 'tag': '[NOOB EN ADELANTE]', 'formato': 'metadata 44445555', 'estado': 'ACTIVO ✅', 'creditos': 20},
+                {'titulo': ' METADATA COMPLETA [DNI + PDF]', 'tag': '[NOOB EN ADELANTE]', 'formato': 'metadata 44445555', 'estado': 'ACTIVO ✅', 'creditos': 20},
                 {'titulo': '📍 SEEKER MÓDULO 1 PDF [NÚMERO]', 'tag': '[DOXER EN ADELANTE]', 'formato': 'metanum 987654321', 'estado': 'ACTIVO ✅', 'creditos': 10},
                 {'titulo': '📍 SEEKER MÓDULO 2 [DNI]', 'tag': '[VIP EN ADELANTE]', 'formato': 'seekerdni 44445555', 'estado': 'ACTIVO ✅', 'creditos': 10},
                 {'titulo': ' SEEKER MÓDULO 2 [NÚMERO]', 'tag': '[HACKER EN ADELANTE]', 'formato': 'seekernum 987654321', 'estado': 'ACTIVO ✅', 'creditos': 30}
@@ -157,7 +157,7 @@ COMANDOS_CATEGORIAS = {
                 {'titulo': ' TELEFONÍA POR NÚMERO', 'tag': '[VIP EN ADELANTE]', 'formato': 'cel 987654321', 'estado': 'ACTIVO ✅', 'creditos': 5},
                 {'titulo': '📍 TELEFONÍA POR DNI', 'tag': '[VIP EN ADELANTE]', 'formato': 'tel 44445555', 'estado': 'ACTIVO ✅', 'creditos': 5},
                 {'titulo': ' LÍNEAS CLARO POR DNI', 'tag': '[VIP EN ADELANTE]', 'formato': 'clardni 44445555', 'estado': 'ACTIVO ✅', 'creditos': 5},
-                {'titulo': '📍 BUSQUEDA TITULAR CLARO, BITEL Y MOVISTAR EN TIEMPO REAL', 'tag': '[VIP EN ADELANTE]', 'formato': 'cel 987654321', 'estado': 'ACTIVO ✅', 'creditos': 7}
+                {'titulo': ' BUSQUEDA TITULAR CLARO, BITEL Y MOVISTAR EN TIEMPO REAL', 'tag': '[VIP EN ADELANTE]', 'formato': 'cel 987654321', 'estado': 'ACTIVO ✅', 'creditos': 7}
             ],
             4: [
                 {'titulo': ' BUSQUEDA DE TITULAR POR TELEFONO O DNI', 'tag': '[VIP EN ADELANTE]', 'formato': 'telp 987654321', 'estado': 'ACTIVO ✅', 'creditos': 5},
@@ -188,11 +188,11 @@ COMANDOS_CATEGORIAS = {
     # PERSONAS (2 páginas)
     # ========================================
     'personas': {
-        'titulo': '👤 PERSONAS',
+        'titulo': ' PERSONAS',
         'total_paginas': 2,
         'paginas': {
             1: [
-                {'titulo': '📍 SEEKER COMPLETO POR DNI', 'tag': '[VIP EN ADELANTE]', 'formato': 'seekerdni 44445555', 'estado': 'ACTIVO ✅', 'creditos': 10},
+                {'titulo': ' SEEKER COMPLETO POR DNI', 'tag': '[VIP EN ADELANTE]', 'formato': 'seekerdni 44445555', 'estado': 'ACTIVO ✅', 'creditos': 10},
                 {'titulo': ' SEEKER COMPLETO PDF', 'tag': '[VIP EN ADELANTE]', 'formato': 'metadni 44445555', 'estado': 'ACTIVO ✅', 'creditos': 25},
                 {'titulo': ' SEEKER COMPLETO v2.0', 'tag': '[VIP EN ADELANTE]', 'formato': 'seeker 45454545', 'estado': 'ACTIVO ✅', 'creditos': 15},
                 {'titulo': '📍 SEEKER v1.0', 'tag': '[VIP EN ADELANTE]', 'formato': 'seeker 44445555', 'estado': 'ACTIVO ✅', 'creditos': 10}
@@ -214,7 +214,7 @@ COMANDOS_CATEGORIAS = {
                 {'titulo': '📍 INSCRIPCIÓN VEHICULAR [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'insve ABC123', 'estado': 'ACTIVO ✅', 'creditos': 10},
                 {'titulo': '📍 DATOS DE UN VEHICULO POR PLACA', 'tag': '[VIP EN ADELANTE]', 'formato': 'pla ABC123', 'estado': 'ACTIVO ✅', 'creditos': 5},
                 {'titulo': ' SUNARP | ASIENTOS [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'placapdf ABC123', 'estado': 'ACTIVO ✅', 'creditos': 10},
-                {'titulo': '📍 TIVE ONLINE SUNARP [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'tiv BFA908', 'estado': 'ACTIVO ✅', 'creditos': 15}
+                {'titulo': ' TIVE ONLINE SUNARP [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'tiv BFA908', 'estado': 'ACTIVO ✅', 'creditos': 15}
             ],
             2: [
                 {'titulo': ' TIVE ORIGINAL SUNARP [PDF]', 'tag': '[VIP EN ADELANTE]', 'formato': 'tive BFA908', 'estado': 'ACTIVO ✅', 'creditos': 15},
@@ -321,7 +321,7 @@ COMANDOS_CATEGORIAS = {
                 {'titulo': '📍 ARBOL GENEALOGICO TEXTO', 'tag': '[VIP EN ADELANTE]', 'formato': 'ag 44441111', 'estado': 'ACTIVO ✅', 'creditos': 8},
                 {'titulo': ' ARBOL GENEALOGICO TEXTO v2', 'tag': '[VIP EN ADELANTE]', 'formato': 'ag2 44441111', 'estado': 'ACTIVO ✅', 'creditos': 8},
                 {'titulo': ' ARBOL GENEALOGICO VISUAL [PNG]', 'tag': '[SOLO PARA RANGOS CON CRÉDITOS]', 'formato': 'agv 44441111', 'estado': 'ACTIVO ✅', 'creditos': 15},
-                {'titulo': '📍 ÁRBOL FAMILIAR VISUAL MEJORADO', 'tag': '[VIP EN ADELANTE]', 'formato': 'famivi 44441111', 'estado': 'ACTIVO ✅', 'creditos': 12}
+                {'titulo': ' ÁRBOL FAMILIAR VISUAL MEJORADO', 'tag': '[VIP EN ADELANTE]', 'formato': 'famivi 44441111', 'estado': 'ACTIVO ✅', 'creditos': 12}
             ]
         }
     },
@@ -343,7 +343,7 @@ COMANDOS_CATEGORIAS = {
     # MTC (2 páginas)
     # ========================================
     'mtc': {
-        'titulo': '🚌 MTC',
+        'titulo': ' MTC',
         'total_paginas': 2,
         'paginas': {
             1: [
@@ -370,7 +370,7 @@ COMANDOS_CATEGORIAS = {
             1: [
                 {'titulo': '📍 DESCANSO + RECETA LA LUZ [PDF]', 'tag': '[NOOB EN ADELANTE]', 'formato': 'laluz 44445555|INFECCION GASTROINTESTINAL|3|AMOXICILINA 500MG', 'estado': 'ACTIVO ✅', 'creditos': 60},
                 {'titulo': '📍 DESCANSO MÉDICO MINSA [PDF]', 'tag': '[NOOB EN ADELANTE]', 'formato': 'dminsa 60685138|INFECCIÓN ESTOMACAL|HOSPITAL NACIONAL CAYETANO HEREDIA|21-04-2026|2', 'estado': 'ACTIVO ✅', 'creditos': 50},
-                {'titulo': '📍 DESCANSO MÉDICO ESSALUD [PDF]', 'tag': '[NOOB EN ADELANTE]', 'formato': 'dessalud DNI|NOMBRE|CONTINGENCIA|DIAS', 'estado': 'ACTIVO ✅', 'creditos': 50},
+                {'titulo': ' DESCANSO MÉDICO ESSALUD [PDF]', 'tag': '[NOOB EN ADELANTE]', 'formato': 'dessalud DNI|NOMBRE|CONTINGENCIA|DIAS', 'estado': 'ACTIVO ✅', 'creditos': 50},
                 {'titulo': ' DESCANSO + RECETA LA LUZ [PDF COMBINADO]', 'tag': '[NOOB EN ADELANTE]', 'formato': 'laluz DNI|DIAGNOSTICO|DIAS|MEDICAMENTOS', 'estado': 'ACTIVO ✅', 'creditos': 60}
             ]
         }
@@ -490,7 +490,7 @@ def generar_botones_navegacion(categoria, pagina_actual):
     
     botones_nav.append([
         Button.inline(" INICIO", b'volver_menu'),
-        Button.inline("❌ CERRAR", b'cerrar_menu')
+        Button.inline(" CERRAR", b'cerrar_menu')
     ])
     
     return botones_nav
@@ -504,7 +504,7 @@ def generar_menu_principal_botones():
         [Button.inline(" DELITOS", b'categoria_delitos'), Button.inline("⚖️ JUSTICIA", b'categoria_justicia')],
         [Button.inline("💰 FINANCIERO", b'categoria_financiero'), Button.inline("📑 SUNAT", b'categoria_sunat')],
         [Button.inline("️ SUNARP", b'categoria_sunarp'), Button.inline("👨‍ FAMILIA", b'categoria_familia')],
-        [Button.inline("🎓 MINEDU", b'categoria_minedu'), Button.inline("💤 DESCANSOS", b'categoria_descansos')],
+        [Button.inline("🎓 MINEDU", b'categoria_minedu'), Button.inline(" DESCANSOS", b'categoria_descansos')],
         [Button.inline(" MTC", b'categoria_mtc'), Button.inline("🇷 ARGENTINA", b'categoria_argentina')],
         [Button.inline(" EXTRAS", b'categoria_extras'), Button.inline("⚙️ GENERADOR", b'categoria_generador')],
         [Button.inline("❓ AYUDA", b'categoria_ayuda'), Button.inline("❌ CERRAR", b'cerrar_menu')]
@@ -814,7 +814,7 @@ async def bot_message_handler(event):
         # ==============================================================================
         print("   → Es de CUENTA SECUNDARIA")
         
-        # 🛡️ VERIFICAR ACCESO EN CLOUDFLARE KV
+        # ️ VERIFICAR ACCESO EN CLOUDFLARE KV
         tiene_acceso = verificar_acceso(sender_id)
         
         if not tiene_acceso:
@@ -851,7 +851,7 @@ async def bot_message_handler(event):
         traceback.print_exc()
 
 # ==============================================================================
-# SECCIÓN 8: HANDLER DE CUENTA PRINCIPAL
+# SECCIÓN 8: HANDLER DE CUENTA PRINCIPAL (CORREGIDO)
 # ==============================================================================
 @user_client.on(events.NewMessage(incoming=True))
 async def user_receive_handler(event):
@@ -901,7 +901,8 @@ async def user_receive_handler(event):
         partes = texto_original.split()
         comando_guia = partes[0].replace('/', '').lower() if partes else ""
         
-        numero_buscar = partes[1] if len(partes) > 1 else ""
+        # 🔧 CORRECCIÓN: Capturar TODO el nombre, no solo la primera palabra
+        numero_buscar = " ".join(partes[1:]) if len(partes) > 1 else ""
         print(f"   ✅ Comando guía: '{comando_guia}' | Número a buscar: '{numero_buscar}'")
         
         print(f"   → Enviando a Provenet...")
@@ -969,24 +970,45 @@ async def user_receive_handler(event):
                         print(f"         → Ignorado (es basura)")
                         continue
                     
-                    # ✅ VALIDACIÓN CORREGIDA: Case-insensitive y más inteligente
+                    # 🚫 FILTRO CRÍTICO: NUNCA DEVOLVER EL COMANDO COMO RESPUESTA
+                    comando_limpio = texto_original.strip().lower()
+                    mensaje_limpio = msg_text.strip().lower()
+                    
+                    # Si el mensaje es EXACTAMENTE el comando enviado, IGNORAR
+                    if mensaje_limpio == comando_limpio:
+                        print(f"         → Ignorado (es el comando original - ECO)")
+                        continue
+                    
+                    # Si es muy corto y solo contiene el comando, IGNORAR
+                    if len(mensaje_limpio) < len(comando_limpio) + 15 and comando_limpio in mensaje_limpio:
+                        print(f"         → Ignorado (eco del comando)")
+                        continue
+                    
+                    # ✅ VALIDACIÓN CON IFs INDEPENDIENTES (no elif)
+                    es_valido = False
+                    
+                    # 1. Si tiene foto/media, siempre es válido
                     if msg_has_media:
-                        mensajes_validos.append(msg)
+                        es_valido = True
                         print(f"         ✅ VÁLIDO (media): Agregado")
-                    elif msg_text:
-                        # 1. Si es búsqueda por nombre (más de 4 letras), busca sin importar mayúsculas
-                        if numero_buscar and len(numero_buscar) > 4:
-                            if numero_buscar.lower() in msg_text.lower():
-                                mensajes_validos.append(msg)
-                                print(f"         ✅ VÁLIDO (nombre '{numero_buscar}' encontrado): Agregado")
-                        # 2. Si es DNI/número corto, o si el comando guía está en la respuesta
-                        elif comando_guia and comando_guia in msg_text.lower():
-                            mensajes_validos.append(msg)
-                            print(f"         ✅ VÁLIDO (comando '{comando_guia}' encontrado): Agregado")
-                        # 3. Fallback: si el texto es largo y ya pasó los filtros de basura, es la data
-                        elif len(msg_text) > 50:
-                            mensajes_validos.append(msg)
-                            print(f"         ✅ VÁLIDO (texto largo con datos): Agregado")
+                    
+                    # 2. Si el texto es grande (más de 80 chars), es data real
+                    if not es_valido and len(msg_text) > 80:
+                        es_valido = True
+                        print(f"         ✅ VÁLIDO (texto largo): Agregado")
+                    
+                    # 3. Si contiene el nombre buscado completo
+                    if not es_valido and numero_buscar and numero_buscar.lower() in msg_text.lower():
+                        es_valido = True
+                        print(f"         ✅ VÁLIDO (nombre '{numero_buscar}' encontrado): Agregado")
+                    
+                    # 4. Si contiene el comando guía
+                    if not es_valido and comando_guia and comando_guia in msg_text.lower():
+                        es_valido = True
+                        print(f"         ✅ VÁLIDO (comando '{comando_guia}' encontrado): Agregado")
+                    
+                    if es_valido:
+                        mensajes_validos.append(msg)
                 
                 print(f"   → Mensajes válidos encontrados: {len(mensajes_validos)}")
                 
@@ -1090,7 +1112,7 @@ async def main():
     main_account_id = me.id
     print(f"✅ Cuenta: {me.first_name} (ID: {main_account_id})")
 
-    print("\n🤖 Iniciando Bot...")
+    print("\n Iniciando Bot...")
     await bot_client.start(bot_token=BOT_TOKEN)
     bot_me = await bot_client.get_me()
     bot_id = bot_me.id
