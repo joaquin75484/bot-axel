@@ -16,7 +16,7 @@ MAIN_ACCOUNT = "@gartuoe733"
 BOT_USERNAME = "@axel_vipBOT"
 
 # 🔑 CREDENCIALES DE CLOUDFLARE (REEMPLAZA ESTOS VALORES)
-CLOUDFLARE_API_TOKEN = "cfut_IQwKUoKTaMAavdiJrzejwQBZSB8Bgk0t7JqKQiUFc3bba3df"
+CLOUDFLARE_API_TOKEN = "cfut_sruesuhFPrG94b2GTq5AeTylCQu2fYDULE3A28FE24ccebaa"
 CLOUDFLARE_ACCOUNT_ID = "1b2513b14e072cb0c924f0bd4a5d091c"
 KV_NAMESPACE_ID = "32aac7daa4e04d76ad32974cb65658bc"
 
@@ -851,7 +851,7 @@ async def bot_message_handler(event):
         traceback.print_exc()
 
 # ==============================================================================
-# SECCIÓN 8: HANDLER DE CUENTA PRINCIPAL (CORREGIDO - CAPTURA TODOS LOS MENSAJES)
+# SECCIÓN 8: HANDLER DE CUENTA PRINCIPAL (CORREGIDO - ENVÍA TODOS LOS MENSAJES)
 # ==============================================================================
 @user_client.on(events.NewMessage(incoming=True))
 async def user_receive_handler(event):
@@ -862,7 +862,7 @@ async def user_receive_handler(event):
         texto = event.raw_text or event.text or ""
         
         print(f"\n{'='*50}")
-        print(f" [USER] Mensaje recibido")
+        print(f"📩 [USER] Mensaje recibido")
         print(f"   Sender ID: {sender_id}")
         print(f"   Texto: {texto[:100]}...")
         
@@ -901,7 +901,6 @@ async def user_receive_handler(event):
         partes = texto_original.split()
         comando_guia = partes[0].replace('/', '').lower() if partes else ""
         
-        # 🔧 CORRECCIÓN: Capturar TODO el nombre, no solo la primera palabra
         numero_buscar = " ".join(partes[1:]) if len(partes) > 1 else ""
         print(f"   ✅ Comando guía: '{comando_guia}' | Número a buscar: '{numero_buscar}'")
         
@@ -929,14 +928,14 @@ async def user_receive_handler(event):
         palabras_basura = ['espera', 'consultando', 'cargando', 'procesando', 'generando', 'por favor']
         
         tiempo_maximo = 45
-        intervalo_verificacion = 3  #  VERIFICA CADA 3 SEGUNDOS FIJOS
+        intervalo_verificacion = 3
         tiempo_esperado = 0
         tiempo_sin_nuevos_mensajes = 0
         
         while tiempo_esperado < tiempo_maximo:
-            espera = intervalo_verificacion  # 🔧 Siempre 3 segundos
+            espera = intervalo_verificacion
             
-            print(f"   ⏳ Esperando {espera} segundos... (total: {tiempo_esperado}s/{tiempo_maximo}s)")
+            print(f"    Esperando {espera} segundos... (total: {tiempo_esperado}s/{tiempo_maximo}s)")
             await asyncio.sleep(espera)
             tiempo_esperado += espera
             
@@ -967,46 +966,37 @@ async def user_receive_handler(event):
                         print(f"         → Ignorado (es basura)")
                         continue
                     
-                    # 🚫 FILTRO CRÍTICO: NUNCA DEVOLVER EL COMANDO COMO RESPUESTA
                     comando_limpio = texto_original.strip().lower()
                     mensaje_limpio = msg_text.strip().lower()
                     
-                    # Si el mensaje es EXACTAMENTE el comando enviado, IGNORAR
                     if mensaje_limpio == comando_limpio:
                         print(f"         → Ignorado (es el comando original - ECO)")
                         continue
                     
-                    # Si es muy corto y solo contiene el comando, IGNORAR
                     if len(mensaje_limpio) < len(comando_limpio) + 15 and comando_limpio in mensaje_limpio:
                         print(f"         → Ignorado (eco del comando)")
                         continue
                     
-                    # ✅ VALIDACIÓN CON IFs INDEPENDIENTES (no elif)
                     es_valido = False
                     
-                    # 1. Si tiene foto/media, siempre es válido
                     if msg_has_media:
                         es_valido = True
                         print(f"         ✅ VÁLIDO (media): Agregado")
                     
-                    # 2. Si el texto es grande (más de 50 chars), es data real
                     if not es_valido and len(msg_text) > 50:
                         es_valido = True
                         print(f"         ✅ VÁLIDO (texto largo): Agregado")
                     
-                    # 3. Si contiene el nombre buscado completo
                     if not es_valido and numero_buscar and numero_buscar.lower() in msg_text.lower():
                         es_valido = True
                         print(f"         ✅ VÁLIDO (nombre '{numero_buscar}' encontrado): Agregado")
                     
-                    # 4. Si contiene patrones de datos reales (DNI:, APELLIDOS:, etc.)
                     if not es_valido:
                         patrones_datos = ['dni:', 'apellidos:', 'nombres:', 'busqueda:', 'total:']
                         if any(patron in msg_text.lower() for patron in patrones_datos):
                             es_valido = True
                             print(f"         ✅ VÁLIDO (contiene datos): Agregado")
                     
-                    # 5. Si contiene el comando guía
                     if not es_valido and comando_guia and comando_guia in msg_text.lower():
                         es_valido = True
                         print(f"         ✅ VÁLIDO (comando '{comando_guia}' encontrado): Agregado")
@@ -1014,63 +1004,58 @@ async def user_receive_handler(event):
                     if es_valido:
                         mensajes_validos_temp.append(msg)
                 
-                # 🔧 Ordenar por fecha para procesar en orden
                 mensajes_validos_temp.sort(key=lambda x: x.date)
                 
-                #  Verificar si hay nuevos mensajes válidos que no teníamos antes
                 nuevos_ids = [msg.id for msg in mensajes_validos_temp if msg.id not in [m.id for m in mensajes_validos]]
                 
                 if nuevos_ids:
                     print(f"   ✅ Detectados {len(nuevos_ids)} NUEVOS mensajes válidos")
-                    mensajes_validos = mensajes_validos_temp.copy()
-                    tiempo_sin_nuevos_mensajes = 0  #  Resetear contador
+                    # ✅ CORRECCIÓN: AGREGAR nuevos mensajes sin perder los anteriores
+                    mensajes_validos = list({msg.id: msg for msg in mensajes_validos + mensajes_validos_temp}.values())
+                    tiempo_sin_nuevos_mensajes = 0
                 else:
                     tiempo_sin_nuevos_mensajes += espera
                     print(f"   ⏱️ Sin nuevos mensajes por {tiempo_sin_nuevos_mensajes}s")
                 
-                # 🔧 Si pasaron 10 segundos sin nuevos mensajes, ya tenemos todos
-                if len(mensajes_validos) > 0 and tiempo_sin_nuevos_mensajes >= 10:
+                if len(mensajes_validos) > 0 and tiempo_sin_nuevos_mensajes >= 15:
                     print(f"   ✅ Ya no llegan más mensajes después de {tiempo_sin_nuevos_mensajes}s")
                     break
                 
-                #  Timeout máximo
                 if tiempo_esperado >= tiempo_maximo:
-                    print(f"    Timeout de {tiempo_maximo}s alcanzado")
+                    print(f"   ⏰ Timeout de {tiempo_maximo}s alcanzado")
                     break
                 
             except Exception as e:
                 print(f"   ⚠️ Error al verificar: {e}")
                 continue
         
-        # 🔧 Asegurar que no haya duplicados
         mensajes_validos = list({msg.id: msg for msg in mensajes_validos}.values())
         mensajes_validos.sort(key=lambda x: x.date)
         
         if not mensajes_validos:
             print(f"   ⚠️ No se encontró respuesta válida después de {tiempo_maximo}s")
-            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n️ ERROR: No se recibió respuesta en {tiempo_maximo} segundos. posiblemente no se encuentra datos, si crees que es un error intente nuevamente.")
+            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n⚠️ ERROR: No se recibió respuesta en {tiempo_maximo} segundos.")
             print("   ✅ Mensaje de timeout enviado al bot")
             return
         
-        print(f"    Total de mensajes válidos capturados: {len(mensajes_validos)}")
+        print(f"   📊 Total de mensajes válidos capturados: {len(mensajes_validos)}")
+        
         try:
-            # ✅ ENVIAR CADA MENSAJE TAL CUAL VIENE DE PROVENET (IGUALITO)
+            # ✅ ENVIAR TODOS LOS MENSAJES CAPTURADOS (NO SOLO UNO)
             for msg in mensajes_validos:
                 header = f"RESULTADO PARA: {chat_destino}\n\n"
                 
                 if msg.media:
-                    # Si tiene foto/media, enviar CON el texto juntos (tal cual viene de ProveNet)
                     texto_completo = header + (msg.text or "")
                     await user_client.send_file(BOT_USERNAME, msg.media, caption=texto_completo)
-                    print(f"   ✅ Enviado: media + texto juntos")
+                    print(f"   ✅ Enviado: media + texto")
                 elif msg.text:
-                    # Si es solo texto, enviar solo texto
                     await user_client.send_message(BOT_USERNAME, header + msg.text)
                     print(f"   ✅ Enviado: solo texto")
                 
                 await asyncio.sleep(0.3)
             
-            print(f"   ✅ TODOS los mensajes ({len(mensajes_validos)}) enviados al bot IGUALITO como vienen")
+            print(f"   ✅ TODOS los {len(mensajes_validos)} mensajes enviados al bot")
             
         except Exception as e:
             print(f"   ❌ Error al enviar al bot: {e}")
