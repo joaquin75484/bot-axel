@@ -851,7 +851,7 @@ async def bot_message_handler(event):
         traceback.print_exc()
 
 # ==============================================================================
-# SECCIÓN 8: HANDLER DE CUENTA PRINCIPAL (CORREGIDO - SOLO ESTA PARTE)
+# SECCIÓN 8: HANDLER DE CUENTA PRINCIPAL (CORREGIDO - CAPTURA TODOS LOS MENSAJES)
 # ==============================================================================
 @user_client.on(events.NewMessage(incoming=True))
 async def user_receive_handler(event):
@@ -923,15 +923,17 @@ async def user_receive_handler(event):
             await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n Error: {e}")
             return
         
-        print("   ⏳ Iniciando espera progresiva (máx 35 segundos)...")
+        print("   ⏳ Iniciando espera progresiva (máx 45 segundos)...")
         
         mensajes_validos = []
         palabras_basura = ['espera', 'consultando', 'cargando', 'procesando', 'generando', 'por favor']
         
-        tiempo_maximo = 35
-        intervalo_inicial = 8
-        intervalo_reintento = 4
+        tiempo_maximo = 45  # 🔧 AUMENTADO a 45 segundos
+        intervalo_inicial = 5  # 🔧 REDUCIDO a 5 segundos
+        intervalo_reintento = 3  # 🔧 REDUCIDO a 3 segundos
         tiempo_esperado = 0
+        mensajes_previos_count = 0
+        tiempo_sin_nuevos_mensajes = 0
         
         while tiempo_esperado < tiempo_maximo:
             if tiempo_esperado == 0:
@@ -946,11 +948,10 @@ async def user_receive_handler(event):
             print(f"   🔍 Verificando respuestas después de {tiempo_esperado}s...")
             
             try:
-                mensajes = await user_client.get_messages(CODE_BOT, limit=100)  # 🔧 AUMENTADO a 100
+                mensajes = await user_client.get_messages(CODE_BOT, limit=100)
                 print(f"   → {len(mensajes)} mensajes encontrados")
                 
-                mensajes_validos = []
-                texto_completo_respuesta = ""  # 🔧 NUEVO: Para acumular todo
+                mensajes_validos_temp = []
                 
                 for i, msg in enumerate(mensajes):
                     msg_text = msg.text or msg.raw_text or ""
@@ -994,7 +995,7 @@ async def user_receive_handler(event):
                         print(f"         ✅ VÁLIDO (media): Agregado")
                     
                     # 2. Si el texto es grande (más de 50 chars), es data real
-                    if not es_valido and len(msg_text) > 50:  # 🔧 REDUCIDO a 50 para capturar más
+                    if not es_valido and len(msg_text) > 50:
                         es_valido = True
                         print(f"         ✅ VÁLIDO (texto largo): Agregado")
                     
@@ -1016,24 +1017,39 @@ async def user_receive_handler(event):
                         print(f"         ✅ VÁLIDO (comando '{comando_guia}' encontrado): Agregado")
                     
                     if es_valido:
-                        mensajes_validos.append(msg)
-                        texto_completo_respuesta += "\n\n" + msg_text if texto_completo_respuesta else msg_text  # 🔧 Acumular todo
+                        mensajes_validos_temp.append(msg)
                 
-                print(f"   → Mensajes válidos encontrados: {len(mensajes_validos)}")
+                # 🔧 Ordenar por fecha para procesar en orden
+                mensajes_validos_temp.sort(key=lambda x: x.date)
                 
-                # 🔧 Si hay múltiples mensajes válidos, esperar un poco más para capturar todos
-                if len(mensajes_validos) > 0 and tiempo_esperado < tiempo_maximo - 5:
-                    print(f"   ⏳ Detectados {len(mensajes_validos)} mensajes, esperando más...")
-                    continue  # 🔧 Continuar esperando por si hay más mensajes
+                # 🔧 Verificar si hay nuevos mensajes válidos que no teníamos antes
+                nuevos_ids = [msg.id for msg in mensajes_validos_temp if msg.id not in [m.id for m in mensajes_validos]]
                 
-                if len(mensajes_validos) > 0:
-                    print(f"   ✅ ¡Respuesta detectada después de {tiempo_esperado}s!")
+                if nuevos_ids:
+                    print(f"   ✅ Detectados {len(nuevos_ids)} NUEVOS mensajes válidos")
+                    mensajes_previos_count = len(mensajes_validos)
+                    mensajes_validos = mensajes_validos_temp.copy()
+                    tiempo_sin_nuevos_mensajes = 0  # 🔧 Resetear contador
+                else:
+                    tiempo_sin_nuevos_mensajes += espera
+                    print(f"   ⏱️ Sin nuevos mensajes por {tiempo_sin_nuevos_mensajes}s")
+                
+                # 🔧 Si pasaron 10 segundos sin nuevos mensajes, ya tenemos todos
+                if len(mensajes_validos) > 0 and tiempo_sin_nuevos_mensajes >= 10:
+                    print(f"   ✅ Ya no llegan más mensajes después de {tiempo_sin_nuevos_mensajes}s")
+                    break
+                
+                # 🔧 Timeout máximo
+                if tiempo_esperado >= tiempo_maximo:
+                    print(f"    Timeout de {tiempo_maximo}s alcanzado")
                     break
                 
             except Exception as e:
                 print(f"   ⚠️ Error al verificar: {e}")
                 continue
         
+        # 🔧 Asegurar que no haya duplicados
+        mensajes_validos = list({msg.id: msg for msg in mensajes_validos}.values())
         mensajes_validos.sort(key=lambda x: x.date)
         
         if not mensajes_validos:
@@ -1042,17 +1058,16 @@ async def user_receive_handler(event):
             print("   ✅ Mensaje de timeout enviado al bot")
             return
         
-        print(f"   📤 Enviando {len(mensajes_validos)} mensajes al bot Axel...")
+        print(f"   📤 Total de mensajes válidos capturados: {len(mensajes_validos)}")
         try:
-            # 🔧 OPCIÓN 1: Enviar TODO concatenado en un solo mensaje
+            # 🔧 CONCATENAR TODOS los mensajes en uno solo
             if mensajes_validos:
-                # Concatenar todos los textos
                 texto_final = f"RESULTADO PARA: {chat_destino}\n\n"
                 
                 for idx, msg in enumerate(mensajes_validos):
                     if msg.text:
                         texto_final += msg.text
-                        if idx < len(mensajes_validos) - 1:  # Agregar separador si no es el último
+                        if idx < len(mensajes_validos) - 1:
                             texto_final += "\n\n" + "─" * 40 + "\n\n"
                 
                 # Enviar todo el texto completo
@@ -1081,7 +1096,7 @@ async def user_receive_handler(event):
         print(f"{'='*50}\n")
         
     except Exception as e:
-        print(f"❌ [USER] ERROR GENERAL: {e}")
+        print(f" [USER] ERROR GENERAL: {e}")
         import traceback
         traceback.print_exc()
 
