@@ -954,55 +954,37 @@ async def user_receive_handler(event):
                     
                     print(f"      Mensaje {i+1}: ID={msg.id}, text='{msg_text[:40]}...', media={msg_has_media}, date={msg_date}")
                     
+                    # ❌ IGNORAR: Mensajes anteriores al enviado
                     if msg_date <= msg_enviado_time:
-                        print(f"         → Ignorado (es anterior o igual al enviado)")
+                        print(f"         → Ignorado (anterior al enviado)")
                         continue
                     
+                    # ❌ IGNORAR: El mensaje que nosotros enviamos
                     if msg.id == msg_enviado_id:
                         print(f"         → Ignorado (es el que enviamos)")
                         continue
                     
+                    # ❌ IGNORAR: Mensajes de "basura" (espera, cargando, etc.)
                     if msg_text and any(x in msg_text.lower() for x in palabras_basura):
-                        print(f"         → Ignorado (es basura)")
+                        print(f"         → Ignorado (mensaje de espera/cargando)")
                         continue
                     
+                    # ❌ IGNORAR: Eco del comando original
                     comando_limpio = texto_original.strip().lower()
                     mensaje_limpio = msg_text.strip().lower()
                     
                     if mensaje_limpio == comando_limpio:
-                        print(f"         → Ignorado (es el comando original - ECO)")
+                        print(f"         → Ignorado (eco exacto del comando)")
                         continue
                     
-                    if len(mensaje_limpio) < len(comando_limpio) + 15 and comando_limpio in mensaje_limpio:
-                        print(f"         → Ignorado (eco del comando)")
+                    if len(mensaje_limpio) < len(comando_limpio) + 10 and comando_limpio in mensaje_limpio:
+                        print(f"         → Ignorado (eco parcial del comando)")
                         continue
                     
-                    es_valido = False
-                    
-                    if msg_has_media:
-                        es_valido = True
-                        print(f"         ✅ VÁLIDO (media): Agregado")
-                    
-                    if not es_valido and len(msg_text) > 50:
-                        es_valido = True
-                        print(f"         ✅ VÁLIDO (texto largo): Agregado")
-                    
-                    if not es_valido and numero_buscar and numero_buscar.lower() in msg_text.lower():
-                        es_valido = True
-                        print(f"         ✅ VÁLIDO (nombre '{numero_buscar}' encontrado): Agregado")
-                    
-                    if not es_valido:
-                        patrones_datos = ['dni:', 'apellidos:', 'nombres:', 'busqueda:', 'total:']
-                        if any(patron in msg_text.lower() for patron in patrones_datos):
-                            es_valido = True
-                            print(f"         ✅ VÁLIDO (contiene datos): Agregado")
-                    
-                    if not es_valido and comando_guia and comando_guia in msg_text.lower():
-                        es_valido = True
-                        print(f"         ✅ VÁLIDO (comando '{comando_guia}' encontrado): Agregado")
-                    
-                    if es_valido:
-                        mensajes_validos_temp.append(msg)
+                    # ✅ ACEPTAR TODO LO DEMÁS (sin filtros estrictos de longitud o palabras clave)
+                    # Esto garantiza que se capturen mensajes como "La consulta se hizo de manera exitosa"
+                    print(f"         ✅ VÁLIDO - Agregado a la lista")
+                    mensajes_validos_temp.append(msg)
                 
                 mensajes_validos_temp.sort(key=lambda x: x.date)
                 
@@ -1017,7 +999,8 @@ async def user_receive_handler(event):
                     tiempo_sin_nuevos_mensajes += espera
                     print(f"   ⏱️ Sin nuevos mensajes por {tiempo_sin_nuevos_mensajes}s")
                 
-                if len(mensajes_validos) > 0 and tiempo_sin_nuevos_mensajes >= 15:
+                # 🔑 CAMBIO CLAVE: Aumentado de 15 a 30 segundos para dar tiempo a que lleguen múltiples mensajes
+                if len(mensajes_validos) > 0 and tiempo_sin_nuevos_mensajes >= 30:
                     print(f"   ✅ Ya no llegan más mensajes después de {tiempo_sin_nuevos_mensajes}s")
                     break
                 
