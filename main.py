@@ -95,7 +95,7 @@ def generar_lista_comandos():
 /dni 44441111 - Foto y datos de una persona
 /nm JUAN CARLOS RAMIREZ ESPINOZA - Búsqueda por nombres
 
-📱 **METADATA:**
+ **METADATA:**
 /metadata 44445555 - Metadata completa DNI + PDF
 /metanum 987654321 - Seeker módulo 1 PDF
 /seekerdni 44445555 - Seeker módulo 2 DNI
@@ -328,7 +328,7 @@ async def bot_message_handler(event):
         if chat_id in processing_messages:
             return
         
-        processing_msg = await event.reply("⏳ Procesando...")
+        processing_msg = await event.reply(" Procesando...")
         processing_messages[chat_id] = processing_msg.id
 
         if event.media:
@@ -343,256 +343,221 @@ async def bot_message_handler(event):
 
 
 # ==============================================================================
-# SECCIÓN 7: HANDLER DE CUENTA PRINCIPAL (CORREGIDO - CRÍTICO)
+# SECCIÓN 7: HANDLERS DE CUENTA PRINCIPAL (SEPARADOS - CRÍTICO)
 # ==============================================================================
+
+# 7.1: Handler para mensajes del BOT AXEL (comandos "PROCESAR PARA:")
 @user_client.on(events.NewMessage(incoming=True))
-async def user_receive_handler(event):
+async def user_axel_handler(event):
+    """Solo procesa mensajes que vienen del bot Axel"""
     global bot_id, main_account_id, consultas_activas
     
+    sender_id = event.sender_id
+    texto = event.raw_text or event.text or ""
+    
+    # 🔑 FILTRO CRÍTICO: Solo mensajes del bot Axel
+    if bot_id is None or sender_id != bot_id:
+        return
+    
+    # Solo procesar si contiene "PROCESAR PARA:"
+    if "PROCESAR PARA:" not in texto:
+        return
+    
+    print(f"\n{'='*60}")
+    print(f"📩 [USER-AXEL] Comando recibido del Bot Axel")
+    
     try:
-        sender_id = event.sender_id
-        texto = event.raw_text or event.text or ""
-        
-        print(f"\n{'='*60}")
-        print(f"📩 [USER] Mensaje recibido en Cuenta Principal")
-        print(f"   Sender ID: {sender_id}")
-        print(f"   Bot ID (esperado): {bot_id}")
-        print(f"   Texto recibido: {repr(texto)}")
-        
-        # Solo procesar mensajes del bot
-        if bot_id is None or sender_id != bot_id:
-            return
-            
-        # ==============================================================================
-        # CASO 1: MENSAJE DE "PROCESAR PARA:" (viene del bot secundario)
-        # ==============================================================================
-        if "PROCESAR PARA:" in texto:
-            print("   → Mensaje de PROCESAR PARA detectado")
-            
-            try:
-                primera_linea = texto.split("\n\n")[0]
-                chat_destino = int(primera_linea.replace("PROCESAR PARA:", "").strip())
-            except Exception as e:
-                print(f"❌ Error extrayendo chat_destino: {e}")
-                return
-            
-            lineas = texto.split("\n\n")
-            if len(lineas) < 2:
-                print("⚠️ Formato incorrecto")
-                return
-            
-            texto_original = lineas[1].strip()
-            
-            if not texto_original and not event.media:
-                print("⚠️ Comando vacío")
-                return
+        primera_linea = texto.split("\n\n")[0]
+        chat_destino = int(primera_linea.replace("PROCESAR PARA:", "").strip())
+    except Exception as e:
+        print(f"❌ Error extrayendo chat_destino: {e}")
+        return
+    
+    lineas = texto.split("\n\n")
+    if len(lineas) < 2:
+        print("⚠️ Formato incorrecto")
+        return
+    
+    texto_original = lineas[1].strip()
+    
+    if not texto_original and not event.media:
+        print("⚠️ Comando vacío")
+        return
 
-            print(f"   ✅ chat_destino extraído: {chat_destino}")
-            print(f"   ✅ texto_original a enviar: {repr(texto_original)}")
-            
-            #  EXTRAER PARÁMETRO DEL COMANDO (ej: "/dni 72700511" → "72700511")
-            parametro = None
-            if ' ' in texto_original:
-                parametro = texto_original.split(' ', 1)[1].strip()
-            
-            es_comando_nm = texto_original.lower().startswith('/nm') or texto_original.lower().startswith('nm ')
-            
-            print(f"   🚀 ENVIANDO CONSULTA AL BOT PROVENET ({CODE_BOT})...")
-            try:
-                if event.media:
-                    print(f"   📎 Enviando con media adjunto...")
-                    msg_enviado = await user_client.send_file(CODE_BOT, event.media, caption=texto_original)
-                else:
-                    print(f"    Enviando solo texto...")
-                    msg_enviado = await user_client.send_message(CODE_BOT, texto_original)
-                
-                msg_enviado_id = msg_enviado.id
-                msg_enviado_time = msg_enviado.date
-                
-                # 🔑 ALMACENAR CONSULTA CON SU ID ÚNICO, PARÁMETRO Y TIEMPO LÍMITE
-                consultas_activas[msg_enviado_id] = {
-                    'chat_destino': chat_destino,
-                    'comando': texto_original,
-                    'parametro': parametro,
-                    'time': datetime.now(),
-                    'timeout': 35,  # ⏱️ Límite máximo: 35 segundos
-                    'es_nm': es_comando_nm,
-                    'mensajes_recibidos': [],
-                    'mensajes_enviados_ids': set(),  # 🔑 Para evitar duplicados
-                    'ya_respondio': False,  # 🔑 Para evitar respuestas duplicadas
-                    'timeout_task': None  # 🔑 Referencia a la tarea de timeout
-                }
-                
-                print(f"   ✅ Consulta registrada - Msg ID: {msg_enviado_id} → Chat: {chat_destino} | Timeout: 35s")
-                
-                # 🔑 INICIAR TAREA DE TIMEOUT (se cancelará si llega respuesta)
-                timeout_task = asyncio.create_task(controlar_timeout(msg_enviado_id, chat_destino, 35))
-                consultas_activas[msg_enviado_id]['timeout_task'] = timeout_task
-                
-            except Exception as e:
-                print(f"   ❌ [ERROR CRÍTICO] Fallo al enviar a Provenet: {e}")
-                import traceback
-                traceback.print_exc()
-                await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n❌ Error: {e}")
-            
-            return
-        
-        # ==============================================================================
-        # CASO 2: RESPUESTA DE PROVENET (filtrar por consulta activa)
-        # ==============================================================================
-        print(f"   → Posible respuesta de Provenet")
-        
-        # Buscar a qué consulta pertenece esta respuesta
-        consulta_encontrada = None
-        msg_id_asociado = None
-        
-        # Extraer texto del mensaje (si es texto)
-        msg_text = event.message.text or event.message.raw_text or ""
-        
-        # Verificar si es una respuesta a alguna consulta activa
-        for msg_id, consulta in consultas_activas.items():
-            # 1. Verificar si es respuesta directa (reply_to_msg_id)
-            if hasattr(event.message, 'reply_to_msg_id'):
-                if event.message.reply_to_msg_id == msg_id:
-                    consulta_encontrada = consulta
-                    msg_id_asociado = msg_id
-                    break
-            
-            # 2. Verificar por parámetro (ej: si el DNI 72700511 está en la respuesta)
-            parametro = consulta['parametro']
-            if parametro and parametro in msg_text:
-                # Verificar que no haya excedido el timeout
-                tiempo_transcurrido = (datetime.now() - consulta['time']).total_seconds()
-                if tiempo_transcurrido <= consulta['timeout']:
-                    consulta_encontrada = consulta
-                    msg_id_asociado = msg_id
-                    break
-        
-        if not consulta_encontrada:
-            print("   ⚠️ Respuesta no asociada a ninguna consulta activa - Ignorando")
-            return
-        
-        # 🔑 CRÍTICO: Verificar si YA se respondió esta consulta (evitar cruce entre chats)
-        if consulta_encontrada.get('ya_respondio', False):
-            print(f"   ⚠️ Esta consulta YA fue respondida - Ignorando mensaje adicional")
-            return
-        
-        print(f"   ✅ Respuesta asociada a consulta - Chat destino: {consulta_encontrada['chat_destino']}")
-        print(f"   → Comando original: {consulta_encontrada['comando']}")
-        print(f"   → Parámetro: {consulta_encontrada['parametro']}")
-        
-        # 🔑 CRÍTICO: Evitar que el comando original sea procesado como respuesta
-        comando_original = consulta_encontrada['comando'].strip().lower()
-        msg_text_lower = msg_text.strip().lower()
-        
-        if msg_text_lower == comando_original:
-            print("   ⚠️ Ignorando mensaje que es idéntico al comando original (echo)")
-            return
-        
-        # 🔑 CRÍTICO: Verificar si YA se envió este mensaje específico (evitar duplicados)
-        msg_id_provenet = event.message.id
-        if msg_id_provenet in consulta_encontrada.get('mensajes_enviados_ids', set()):
-            print(f"   ⚠️ Mensaje {msg_id_provenet} YA fue enviado - Evitando duplicado")
-            return
-        
-        # Agregar mensaje a la consulta
-        consulta_encontrada['mensajes_recibidos'].append(event.message)
-        
-        #  CRÍTICO: Marcar este mensaje como enviado
-        if 'mensajes_enviados_ids' not in consulta_encontrada:
-            consulta_encontrada['mensajes_enviados_ids'] = set()
-        consulta_encontrada['mensajes_enviados_ids'].add(msg_id_provenet)
-        
-        # Marcar que ya se respondió (evita cruce con otras consultas)
-        consulta_encontrada['ya_respondio'] = True
-        
-        # 🔑 CRÍTICO: Cancelar el timeout porque YA llegó respuesta
-        if consulta_encontrada.get('timeout_task'):
-            consulta_encontrada['timeout_task'].cancel()
-            print(f"   ✅ Timeout cancelado - Respuesta recibida a tiempo")
-        
-        # Esperar un poco para capturar mensajes secuenciales
-        await asyncio.sleep(1.5)
-        
-        # Verificar si llegaron más mensajes
-        mensajes_finales = consulta_encontrada['mensajes_recibidos']
-        
-        # ==============================================================================
-        # ENVÍO DE RESULTADOS (SOLO al chat correcto)
-        # ==============================================================================
-        chat_destino = consulta_encontrada['chat_destino']
-        total = len(mensajes_finales)
-        
-        print(f"   📤 Enviando {total} mensaje(s) al chat {chat_destino}")
-        
-        if total == 0:
-            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n⚠️ Sin respuesta")
+    print(f"   ✅ chat_destino: {chat_destino}")
+    print(f"   ✅ comando: {repr(texto_original)}")
+    
+    # EXTRAER PARÁMETRO DEL COMANDO
+    parametro = None
+    if ' ' in texto_original:
+        parametro = texto_original.split(' ', 1)[1].strip()
+    
+    es_comando_nm = texto_original.lower().startswith('/nm') or texto_original.lower().startswith('nm ')
+    
+    print(f"   🚀 ENVIANDO A PROVENET...")
+    try:
+        if event.media:
+            msg_enviado = await user_client.send_file(CODE_BOT, event.media, caption=texto_original)
         else:
-            # Si es /nm y hay múltiples mensajes → crear TXT
-            if consulta_encontrada['es_nm'] and total > 1:
-                print(f"   📄 Creando archivo TXT para /nm")
-                
-                contenido_completo = ""
-                for idx, msg in enumerate(mensajes_finales, 1):
-                    if msg.text:
-                        contenido_completo += f"\n{'='*60}\n"
-                        contenido_completo += f" RESULTADO {idx} DE {total}\n"
-                        contenido_completo += f"{'='*60}\n\n"
-                        contenido_completo += msg.text
-                        contenido_completo += f"\n\n"
-                
-                nombre_archivo = f"RESULTADO_NM_{chat_destino}.txt"
-                
-                await user_client.send_file(
-                    BOT_USERNAME,
-                    contenido_completo.encode('utf-8'),
-                    caption=f"**RESULTADO PARA: {chat_destino}**\n\n📦 {total} resultados",
-                    filename=nombre_archivo
-                )
-                print(f"   ✅ Archivo TXT enviado")
-            else:
-                # Enviar normalmente
-                for idx, msg in enumerate(mensajes_finales, 1):
-                    try:
-                        header = f"RESULTADO PARA: {chat_destino}\n\n"
-                        
-                        if total > 1:
-                            header += f"**📦 PARTE {idx} DE {total}**\n\n"
-                        
-                        if msg.media:
-                            await user_client.send_file(BOT_USERNAME, msg.media, caption=header + (msg.text or ""))
-                        else:
-                            await user_client.send_message(BOT_USERNAME, header + msg.text)
-                        
-                        await asyncio.sleep(0.5)
-                        
-                    except Exception as e:
-                        print(f"   ❌ Error enviando parte {idx}: {e}")
+            msg_enviado = await user_client.send_message(CODE_BOT, texto_original)
         
-        # Limpiar consulta completada
-        if msg_id_asociado and msg_id_asociado in consultas_activas:
-            del consultas_activas[msg_id_asociado]
+        msg_enviado_id = msg_enviado.id
+        msg_enviado_time = msg_enviado.date
         
-        print(f"   🎉 Consulta completada y eliminada")
-        print(f"{'='*60}\n")
+        # 🔑 ALMACENAR CONSULTA
+        consultas_activas[msg_enviado_id] = {
+            'chat_destino': chat_destino,
+            'comando': texto_original,
+            'parametro': parametro,
+            'time': datetime.now(),
+            'timeout': 35,
+            'es_nm': es_comando_nm,
+            'mensajes_recibidos': [],
+            'mensajes_enviados_ids': set(),
+            'ya_respondio': False,
+            'timeout_task': None
+        }
+        
+        print(f"   ✅ Consulta registrada - Msg ID: {msg_enviado_id} → Chat: {chat_destino}")
+        
+        # INICIAR TAREA DE TIMEOUT
+        timeout_task = asyncio.create_task(controlar_timeout(msg_enviado_id, chat_destino, 35))
+        consultas_activas[msg_enviado_id]['timeout_task'] = timeout_task
         
     except Exception as e:
-        print(f"❌ [USER] ERROR GENERAL: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"   ❌ Error enviando a Provenet: {e}")
+        await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n❌ Error: {e}")
+    
+    print(f"{'='*60}\n")
+
+
+# 7.2: Handler para respuestas de PROVENET
+@user_client.on(events.NewMessage(incoming=True))
+async def user_provenet_handler(event):
+    """Solo procesa mensajes que vienen de Provenet"""
+    global consultas_activas
+    
+    # 🔑 FILTRO CRÍTICO: Solo mensajes de Provenet
+    chat = await event.get_chat()
+    is_provenet = False
+    if hasattr(chat, 'username') and chat.username:
+        if chat.username.replace('@', '').lower() == 'provenetdoxbot':
+            is_provenet = True
+    
+    if not is_provenet:
+        return  # No es Provenet, ignorar
+    
+    msg_text = event.text or ""
+    msg_id = event.id
+    
+    print(f"\n{'='*60}")
+    print(f"📩 [USER-PROVENET] Respuesta recibida - Msg ID: {msg_id}")
+    print(f"   Texto: {repr(msg_text[:100])}")
+    
+    # Buscar a qué consulta pertenece esta respuesta
+    consulta_encontrada = None
+    msg_id_asociado = None
+    
+    for req_id, consulta in consultas_activas.items():
+        # MÉTODO 1: Respuesta directa (reply_to_msg_id)
+        if hasattr(event.message, 'reply_to_msg_id') and event.message.reply_to_msg_id:
+            if event.message.reply_to_msg_id == req_id:
+                consulta_encontrada = consulta
+                msg_id_asociado = req_id
+                print(f"   ✅ Coincide por REPLY_TO: {req_id}")
+                break
+        
+        # MÉTODO 2: Coincidencia por parámetro en el texto
+        parametro = consulta.get('parametro')
+        if parametro and parametro in msg_text:
+            tiempo_transcurrido = (datetime.now() - consulta['time']).total_seconds()
+            if tiempo_transcurrido <= consulta['timeout']:
+                consulta_encontrada = consulta
+                msg_id_asociado = req_id
+                print(f"   ✅ Coincide por PARÁMETRO '{parametro}' - Request ID: {req_id}")
+                break
+        
+        # MÉTODO 3: Es media y hay consulta reciente
+        if event.media:
+            tiempo_transcurrido = (datetime.now() - consulta['time']).total_seconds()
+            if tiempo_transcurrido <= consulta['timeout']:
+                consulta_encontrada = consulta
+                msg_id_asociado = req_id
+                print(f"   ✅ Coincide por MEDIA RECIENTE - Request ID: {req_id}")
+                break
+    
+    if not consulta_encontrada:
+        print("   ⚠️ No asociada a ninguna consulta activa - Ignorando")
+        return
+    
+    # 🔑 CRÍTICO: Verificar si YA se respondió esta consulta
+    if consulta_encontrada.get('ya_respondio', False):
+        print(f"   ⚠️ Esta consulta YA fue respondida - Ignorando")
+        return
+    
+    chat_destino = consulta_encontrada['chat_destino']
+    
+    # Evitar ecos (comando original = respuesta)
+    comando_original = consulta_encontrada['comando'].strip().lower()
+    if msg_text.strip().lower() == comando_original:
+        print("   ⚠️ Ignorando eco del comando original")
+        return
+    
+    # 🔑 CRÍTICO: Verificar si YA se envió este mensaje específico
+    if msg_id in consulta_encontrada.get('mensajes_enviados_ids', set()):
+        print(f"   ⚠️ Mensaje {msg_id} YA enviado - Evitando duplicado")
+        return
+    
+    # Agregar mensaje a la consulta
+    consulta_encontrada['mensajes_recibidos'].append(event.message)
+    
+    # Marcar este mensaje como enviado
+    if 'mensajes_enviados_ids' not in consulta_encontrada:
+        consulta_encontrada['mensajes_enviados_ids'] = set()
+    consulta_encontrada['mensajes_enviados_ids'].add(msg_id)
+    
+    # 🔑 CRÍTICO: Marcar que ya se respondió
+    consulta_encontrada['ya_respondio'] = True
+    
+    # 🔑 CRÍTICO: Cancelar el timeout porque YA llegó respuesta
+    if consulta_encontrada.get('timeout_task'):
+        consulta_encontrada['timeout_task'].cancel()
+        print(f"   ✅ Timeout CANCELADO - Respuesta recibida")
+    
+    print(f"    Reenviando al chat {chat_destino}")
+    
+    # Enviar INMEDIATAMENTE al bot Axel
+    try:
+        header = f"RESULTADO PARA: {chat_destino}\n\n"
+        
+        if event.media:
+            await user_client.send_file(BOT_USERNAME, event.media, caption=header + msg_text)
+        else:
+            await user_client.send_message(BOT_USERNAME, header + msg_text)
+        
+        print(f"   ✅ Mensaje reenviado correctamente")
+    except Exception as e:
+        print(f"   ❌ Error al reenviar: {e}")
+    
+    # Limpiar consulta
+    if msg_id_asociado and msg_id_asociado in consultas_activas:
+        del consultas_activas[msg_id_asociado]
+    
+    print(f"   🎉 Consulta completada y eliminada")
+    print(f"{'='*60}\n")
 
 
 # ==============================================================================
-# 🔑 NUEVA FUNCIÓN: CONTROL DE TIMEOUT (REVISAR CADA 3 SEGUNDOS)
+# FUNCIÓN: CONTROL DE TIMEOUT (REVISAR CADA 3 SEGUNDOS)
 # ==============================================================================
 async def controlar_timeout(request_id, chat_destino, timeout_segundos=35):
     """
-    Monitorea el tiempo de espera de una consulta revisando cada 3 segundos.
+    Monitorea el tiempo de espera revisando cada 3 segundos.
     Si pasan 35 segundos sin respuesta, envía mensaje de error.
     """
     try:
         tiempo_transcurrido = 0
-        intervalo_revision = 3  # 🔑 Revisar cada 3 segundos
+        intervalo_revision = 3  # Revisar cada 3 segundos
         
         while tiempo_transcurrido < timeout_segundos:
             await asyncio.sleep(intervalo_revision)
@@ -605,20 +570,18 @@ async def controlar_timeout(request_id, chat_destino, timeout_segundos=35):
             
             consulta = consultas_activas[request_id]
             
-            # 🔑 Si ya se respondió, cancelar timeout
+            # Si ya se respondió, cancelar timeout
             if consulta.get('ya_respondio', False):
-                print(f"   ✅ Consulta {request_id} respondida a los {tiempo_transcurrido}s - Timeout cancelado")
+                print(f"   ✅ Consulta {request_id} respondida a los {tiempo_transcurrido}s")
                 return
         
-        # 🔑 Si llegamos aquí, es que se agotó el tiempo sin respuesta
-        print(f"   ⏱️ TIMEOUT: Consulta {request_id} excedió {timeout_segundos}s sin respuesta")
+        # Se agotó el tiempo sin respuesta
+        print(f"   ⏱️ TIMEOUT: Consulta {request_id} excedió {timeout_segundos}s")
         
-        # Verificar que aún exista y no haya sido respondida
         if request_id in consultas_activas:
             consulta = consultas_activas[request_id]
             
             if not consulta.get('ya_respondio', False):
-                # Enviar mensaje de timeout al usuario
                 try:
                     await user_client.send_message(
                         BOT_USERNAME,
@@ -674,6 +637,6 @@ async def main():
 
 if __name__ == "__main__":
     try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        print("\n👋 Bot detenido.")
+    asyncio.run(main())
+except KeyboardInterrupt:
+    print("\n👋 Bot detenido.")
