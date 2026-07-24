@@ -81,135 +81,135 @@ def verificar_acceso(user_id):
             return False
             
     except Exception as e:
-        print(f" Error al verificar acceso: {e}")
+        print(f"❌ Error al verificar acceso: {e}")
         return False
 
 # ==============================================================================
-# SECCIÓN 4: LISTA DE COMANDOS (TEXTO SIMPLE)
+# SECCIÓN 4: LISTA DE COMANDOS (TEXTO SIMPLE) - CON EJEMPLOS
 # ==============================================================================
 def generar_lista_comandos():
-    """Genera la lista completa de comandos en texto simple"""
+    """COMANDOS COMPLETO"""
     
     comandos = """📄 **RENIEC:**
-/dni <dni> - Foto y datos de una persona (2 créditos)
-/nm <nombres y apellidos> - Búsqueda por nombres (1 crédito)
+/dni 44441111 - Foto y datos de una persona
+/nm JUAN CARLOS RAMIREZ ESPINOZA - Búsqueda por nombres
 
 📱 **METADATA:**
-/metadata <dni> - Metadata completa DNI + PDF (20 créditos)
-/metanum <numero> - Seeker módulo 1 PDF (10 créditos)
-/seekerdni <dni> - Seeker módulo 2 DNI (10 créditos)
-/seekernum <numero> - Seeker módulo 2 número (30 créditos)
+/metadata 44445555 - Metadata completa DNI + PDF
+/metanum 987654321 - Seeker módulo 1 PDF
+/seekerdni 44445555 - Seeker módulo 2 DNI
+/seekernum 987654321 - Seeker módulo 2 número
 
 📞 **TELEFONIA:**
-/fonos <dni> - Teléfonos por DNI (5 créditos)
-/fono <numero> - Titular por número (5 créditos)
-/lineas <dni> - Líneas por DNI (5 créditos)
-/titular <numero> - Titular detallado (5 créditos)
-/movistar <numero> - Consulta Movistar (5 créditos)
-/bitel <numero> - Consulta Bitel (5 créditos)
-/claro <numero> - Consulta Claro (7 créditos)
-/valnum <numero> - Consulta operador (3 créditos)
-/cel <numero> - Telefonía por número (5 créditos)
-/tel <dni> - Telefonía por DNI (5 créditos)
-/clardni <dni> - Líneas Claro por DNI (5 créditos)
-/telp <numero> - Búsqueda titular (5 créditos)
-/telx <dni o numero> - Telefonía general (5 créditos)
+/fonos 44445555 - Teléfonos por DNI
+/fono 986699757 - Titular por número
+/lineas 44445555 - Líneas por DNI
+/titular 951568168 - Titular detallado
+/movistar 967245095 - Consulta Movistar
+/bitel 910884863 - Consulta Bitel
+/claro 923990901 - Consulta Claro
+/valnum 987654321 - Consulta operador
+/cel 987654321 - Telefonía por número
+/tel 44445555 - Telefonía por DNI
+/clardni 44445555 - Líneas Claro por DNI
+/telp 987654321 - Búsqueda titular
+/telx 44445555 - Telefonía general
 
 👤 **FACIAL:**
-/facial [foto] - Reconocimiento facial masivo (45 créditos)
+/facial [foto] - Reconocimiento facial masivo
 
 👤 **PERSONAS:**
-/seekerdni <dni> - Seeker completo por DNI (10 créditos)
-/metadni <dni> - Seeker completo PDF (25 créditos)
-/seeker <dni> - Seeker completo v2.0 (15 créditos)
-/co <dni> - Correos de una persona (5 créditos)
+/seekerdni 44445555 - Seeker completo por DNI
+/metadni 44445555 - Seeker completo PDF
+/seeker 45454545 - Seeker completo v2.0
+/co 44445555 - Correos de una persona
 
 🚗 **VEHICULOS:**
-/insve <placa> - Inscripción vehicular PDF (10 créditos)
-/pla <placa> - Datos de vehículo (5 créditos)
-/placapdf <placa> - Sunarp asientos PDF (10 créditos)
-/tiv <placa> - Tive online Sunarp PDF (15 créditos)
-/tive <placa> - Tive original Sunarp PDF (15 créditos)
-/tiveg <placa> - Tive generado Sunarp PDF (15 créditos)
-/tarjeta <placa> - Tarjeta de propiedad (10 créditos)
-/pla2 <placa> - Datos placa imagen (2 créditos)
-/citv <placa> - Revisión técnica TXT (8 créditos)
-/soat <placa> - SOAT vehicular texto (7 créditos)
-/soatpdf <placa> - SOAT vehicular PDF (7 créditos)
-/boleta <placa> - Boleta informativa PDF (10 créditos)
+/insve ABC123 - Inscripción vehicular PDF
+/pla ABC123 - Datos de vehículo
+/placapdf ABC123 - Sunarp asientos PDF
+/tiv BFA908 - Tive online Sunarp PDF
+/tive BFA908 - Tive original Sunarp PDF
+/tiveg ABC123 - Tive generado Sunarp PDF
+/tarjeta ABC-123 - Tarjeta de propiedad
+/pla2 ABC123 - Datos placa imagen
+/citv ABC123 - Revisión técnica TXT
+/soat ABC123 - SOAT vehicular texto
+/soatpdf ABC123 - SOAT vehicular PDF
+/boleta ABC123 - Boleta informativa PDF
 
 ⚖️ **DELITOS:**
-/anteper <dni> - Antecedentes personales PDF (8 créditos)
-/rqper <dni> - Requisitoria persona PDF (8 créditos)
-/denuncias <dni> - Denuncias policiales (20 créditos)
-/sidpolpdf <dni> - Sidpol PDF (15 créditos)
+/anteper 44445555 - Antecedentes personales PDF
+/rqper 44445555 - Requisitoria persona PDF
+/denuncias 44445555 - Denuncias policiales
+/sidpolpdf 44445555 - Sidpol PDF
 
 💰 **FINANCIERO:**
-/sentinel <dni> - SBS Central de riesgos PDF (8 créditos)
+/sentinel 44445555 - SBS Central de riesgos PDF
 
 📑 **SUNARP:**
-/sunarp <dni> - Sunarp texto (6 créditos)
-/sunarpdf <dni> - Sunarp PDF (10 créditos)
-/bienespdf <dni> - Bienes inmuebles PDFs (12 créditos)
+/sunarp 44445555 - Sunarp texto
+/sunarpdf 44445555 - Sunarp PDF
+/bienespdf 44445555 - Bienes inmuebles PDFs
 
 ⚖️ **JUSTICIA:**
-/fiscalia <dni> - Fiscalía texto (12 créditos)
-/fiscaliapdf <dni> - Fiscalía PDF DNI (30 créditos)
-/fisruc <ruc> - Fiscalía PDF RUC (30 créditos)
-/fisructext <ruc> - Fiscalía texto RUC (12 créditos)
-/fisnm <nombres> - Fiscalía por nombres TXT (30 créditos)
-/fisnmpdf <nombres> - Fiscalía por nombres PDF (30 créditos)
-/fiscaso <caso> - Fiscalía caso texto (12 créditos)
-/fiscasopdf <caso> - Fiscalía caso PDF (30 créditos)
+/fiscalia 44445555 - Fiscalía texto
+/fiscaliapdf 44445555 - Fiscalía PDF DNI
+/fisruc 20536902385 - Fiscalía PDF RUC
+/fisructext 20536902385 - Fiscalía texto RUC
+/fisnm URIEL|BERNAL|JUSCACHI - Fiscalía por nombres TXT
+/fisnmpdf URIEL|BERNAL|JUSCACHI - Fiscalía por nombres PDF
+/fiscaso 01805114504-2023-000045-0000 - Fiscalía caso texto
+/fiscasopdf 01805114504-2023-000045-0000 - Fiscalía caso PDF
 
 💵 **SUNAT:**
-/ruc <ruc> - RUC info completo (5 créditos)
+/ruc 20165465009 - RUC info completo
 
 👨‍👩‍👧 **FAMILIA:**
-/ag <dni> - Árbol genealógico texto (8 créditos)
-/ag2 <dni> - Árbol genealógico texto v2 (8 créditos)
-/agv <dni> - Árbol genealógico visual PNG (15 créditos)
-/famivi <dni> - Árbol familiar visual (12 créditos)
+/ag 44441111 - Árbol genealógico texto
+/ag2 44441111 - Árbol genealógico texto v2
+/agv 44441111 - Árbol genealógico visual PNG
+/famivi 44441111 - Árbol familiar visual
 
 🎓 **MINEDU:**
-/minedu <dni> - Notas Minedu PDF (10 créditos)
+/minedu 44445555 - Notas Minedu PDF
 
 🚦 **MTC:**
-/licencia <dni> - Licencia de conducir (6 créditos)
-/licenciapdf <dni> - Licencia electrónica PDF (10 créditos)
-/record <dni> - Papeletas por DNI PDF (10 créditos)
-/tarjeta <placa> - Tarjeta de propiedad imagen (8 créditos)
-/citv <placa> - Revisión técnica TXT (6 créditos)
-/citvpdf <placa> - Revisión técnica PDF (12 créditos)
-/rqpla <placa> - Requisitoria vehicular PDF (8 créditos)
+/licencia 45454545 - Licencia de conducir
+/licenciapdf 45454545 - Licencia electrónica PDF
+/record 45454545 - Papeletas por DNI PDF
+/tarjeta ABS920 - Tarjeta de propiedad imagen
+/citv ABC123 - Revisión técnica TXT
+/citvpdf ABC123 - Revisión técnica PDF
+/rqpla APM384 - Requisitoria vehicular PDF
 
 💤 **DESCANSOS:**
-/laluz <dni>|<diagnostico>|<dias>|<medicamentos> - Descanso La Luz PDF (60 créditos)
-/dminsa <dni>|<diagnostico>|<hospital>|<fecha>|<dias> - Descanso Minsa PDF (50 créditos)
-/dessalud <dni>|<nombre>|<contingencia>|<dias> - Descanso Essalud PDF (50 créditos)
+/laluz 44445555|INFECCION GASTROINTESTINAL|3|AMOXICILINA 500MG - Descanso La Luz PDF
+/dminsa 60685138|INFECCIÓN ESTOMACAL|HOSPITAL NACIONAL CAYETANO HEREDIA|21-04-2026|2 - Descanso Minsa PDF
+/dessalud DNI|NOMBRE|CONTINGENCIA|DIAS - Descanso Essalud PDF
 
 🇦🇷 **ARGENTINA:**
-/dniarg <dni> - Búsqueda por DNI Argentina (2 créditos)
-/telarg <numero> - Búsqueda por teléfono Argentina (2 créditos)
-/nmarg <nombre> - Búsqueda por nombre Argentina (2 créditos)
+/dniarg 12345678 - Búsqueda por DNI Argentina
+/telarg 2284524520 - Búsqueda por teléfono Argentina
+/nmarg juan perez - Búsqueda por nombre Argentina
 
 ⚙️ **GENERADOR:**
-/c4 <dni> - C4 azul generado (5 créditos)
-/c4b <dni> - C4 blanco generado (5 créditos)
-/c4i <dni> - Certificado de inscripción (8 créditos)
-/dniv <dni> - DNI virtual azul (8 créditos)
-/dnive <dni> - DNI electrónico (8 créditos)
-/antpe <dni> - Certificado antecedentes penales (8 créditos)
-/antju <dni> - Certificado antecedentes judiciales (8 créditos)
-/antpol <dni> - Antecedentes policiales (8 créditos)
+/c4 44441111 - C4 azul generado
+/c4b 44441111 - C4 blanco generado
+/c4i 44441111 - Certificado de inscripción
+/dniv 44445555 - DNI virtual azul
+/dnive 44445555 - DNI electrónico
+/antpe 44445555 - Certificado antecedentes penales
+/antju 44445555 - Certificado antecedentes judiciales
+/antpol 44445555 - Antecedentes policiales
 
 🌐 **EXTRAS:**
-/ip <ip> - Geocalización por IP (1 crédito)
-/dpm <nombre>|<carrera> - Diploma USC (3 créditos)
+/ip 192.199.248.75 - Geocalización por IP
+/dpm Juan Perez|Ingeniería de Sistemas - Diploma USC
 
 ━━━━━━━━━━━━━━━━━━━━
 📊 Total: 78 comandos disponibles
-💳 Créditos requeridos según comando"""
+💡 Usa los ejemplos mostrados como referencia"""
     
     return comandos
 
@@ -218,7 +218,7 @@ def generar_lista_comandos():
 # ==============================================================================
 @bot_client.on(events.NewMessage(incoming=True, pattern=r'(?i)^/cmds|^/menu|^/help|^/comandos'))
 async def cmds_handler(event):
-    """Handler para el comando /cmds - Muestra lista de comandos con imagen"""
+    """Handler para el comando /cmds - Muestra lista simple de comandos con imagen"""
     try:
         sender_id = event.sender_id
         
@@ -233,28 +233,31 @@ async def cmds_handler(event):
                 f"🆔 <b>Tu ID:</b> <code>{sender_id}</code>",
                 parse_mode='html'
             )
-            raise events.StopPropagation  # 🛑 Detiene la propagación para que no lo capture el handler general
+            raise events.StopPropagation
         
         print("   → Ejecutando comando /cmds - Mostrando lista de comandos")
         
         # Obtener lista de comandos
         lista_comandos = generar_lista_comandos()
         
-        mensaje = (
+        mensaje_completo = (
             f"**[ LISTA DE COMANDOS ]**\n\n"
             f"**AXEL DOX BOT**\n\n"
             f"{lista_comandos}\n\n"
-            f"💡 Usa los comandos directamente con el formato mostrado."
+            f"💡 Usa los ejemplos mostrados como referencia."
         )
         
-        # 🖼️ ENVIAR MENSAJE CON IMAGEN
+        # 🖼️ 1. ENVIAR IMAGEN CON UN CAPTION CORTO (Evita el límite de 1024 caracteres de Telegram)
         await event.reply(
             file="https://i.postimg.cc/sgxrCSxP/cmdsiamgen.png",
-            message=mensaje,
+            message="📋 **COMANDOS DISPONIBLES**\n\nA continuación la lista completa:",
             parse_mode='md'
         )
         
-        # 🛑 Detener propagación para evitar que el handler general lo procese también
+        # 📝 2. ENVIAR EL TEXTO COMPLETO COMO MENSAJE SEPARADO
+        await event.reply(mensaje_completo, parse_mode='md')
+        
+        # 🛑 DETENER PROPAGACIÓN para que el handler general no lo procese dos veces
         raise events.StopPropagation
         
     except Exception as e:
@@ -275,7 +278,7 @@ async def bot_message_handler(event):
         chat_id = event.chat_id
         sender_id = event.sender_id
         
-        # 🛡️ Si es un comando de menú, ignorar en este handler (ya lo maneja cmds_handler)
+        # 🛡️ Si es un comando de menú, ignorar (ya lo maneja cmds_handler)
         if texto_lower.startswith('/cmds') or texto_lower.startswith('/menu') or texto_lower.startswith('/help') or texto_lower.startswith('/comandos'):
             return
         
