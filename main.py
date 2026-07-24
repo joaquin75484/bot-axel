@@ -637,6 +637,6 @@ async def main():
 
 if __name__ == "__main__":
     try:
-    asyncio.run(main())
-except KeyboardInterrupt:
-    print("\n👋 Bot detenido.")
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("\n👋 Bot detenido.")
