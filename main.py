@@ -115,7 +115,7 @@ def generar_lista_comandos():
 /telp <numero> - Búsqueda titular (5 créditos)
 /telx <dni o numero> - Telefonía general (5 créditos)
 
- **FACIAL:**
+👤 **FACIAL:**
 /facial [foto] - Reconocimiento facial masivo (45 créditos)
 
 👤 **PERSONAS:**
@@ -138,7 +138,7 @@ def generar_lista_comandos():
 /soatpdf <placa> - SOAT vehicular PDF (7 créditos)
 /boleta <placa> - Boleta informativa PDF (10 créditos)
 
- **DELITOS:**
+⚖️ **DELITOS:**
 /anteper <dni> - Antecedentes personales PDF (8 créditos)
 /rqper <dni> - Requisitoria persona PDF (8 créditos)
 /denuncias <dni> - Denuncias policiales (20 créditos)
@@ -152,7 +152,7 @@ def generar_lista_comandos():
 /sunarpdf <dni> - Sunarp PDF (10 créditos)
 /bienespdf <dni> - Bienes inmuebles PDFs (12 créditos)
 
-️ **JUSTICIA:**
+⚖️ **JUSTICIA:**
 /fiscalia <dni> - Fiscalía texto (12 créditos)
 /fiscaliapdf <dni> - Fiscalía PDF DNI (30 créditos)
 /fisruc <ruc> - Fiscalía PDF RUC (30 créditos)
@@ -203,7 +203,7 @@ def generar_lista_comandos():
 /antju <dni> - Certificado antecedentes judiciales (8 créditos)
 /antpol <dni> - Antecedentes policiales (8 créditos)
 
- **EXTRAS:**
+🌐 **EXTRAS:**
 /ip <ip> - Geocalización por IP (1 crédito)
 /dpm <nombre>|<carrera> - Diploma USC (3 créditos)
 
@@ -218,7 +218,7 @@ def generar_lista_comandos():
 # ==============================================================================
 @bot_client.on(events.NewMessage(incoming=True, pattern=r'(?i)^/cmds|^/menu|^/help|^/comandos'))
 async def cmds_handler(event):
-    """Handler para el comando /cmds - Muestra lista simple de comandos"""
+    """Handler para el comando /cmds - Muestra lista de comandos con imagen"""
     try:
         sender_id = event.sender_id
         
@@ -233,7 +233,7 @@ async def cmds_handler(event):
                 f"🆔 <b>Tu ID:</b> <code>{sender_id}</code>",
                 parse_mode='html'
             )
-            return
+            raise events.StopPropagation  # 🛑 Detiene la propagación para que no lo capture el handler general
         
         print("   → Ejecutando comando /cmds - Mostrando lista de comandos")
         
@@ -247,7 +247,15 @@ async def cmds_handler(event):
             f"💡 Usa los comandos directamente con el formato mostrado."
         )
         
-        await event.reply(mensaje, parse_mode='md')
+        # 🖼️ ENVIAR MENSAJE CON IMAGEN
+        await event.reply(
+            file="https://i.postimg.cc/sgxrCSxP/cmdsiamgen.png",
+            message=mensaje,
+            parse_mode='md'
+        )
+        
+        # 🛑 Detener propagación para evitar que el handler general lo procese también
+        raise events.StopPropagation
         
     except Exception as e:
         print(f"❌ Error al mostrar comandos: {e}")
@@ -267,7 +275,7 @@ async def bot_message_handler(event):
         chat_id = event.chat_id
         sender_id = event.sender_id
         
-        # 🛡️ Si es un comando de menú, ignorar
+        # 🛡️ Si es un comando de menú, ignorar en este handler (ya lo maneja cmds_handler)
         if texto_lower.startswith('/cmds') or texto_lower.startswith('/menu') or texto_lower.startswith('/help') or texto_lower.startswith('/comandos'):
             return
         
