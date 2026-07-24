@@ -42,6 +42,7 @@ consultas_activas = {}
 # FUNCIÓN PARA VERIFICAR ACCESO EN CLOUDFLARE KV
 # ==============================================================================
 def verificar_acceso(user_id):
+    """Verifica si el usuario tiene acceso en Cloudflare KV"""
     try:
         timestamp = int(time.time())
         url = f"https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/storage/kv/namespaces/{KV_NAMESPACE_ID}/values/user:{user_id}?t={timestamp}"
@@ -59,6 +60,7 @@ def verificar_acceso(user_id):
         if response.status_code == 200:
             try:
                 data = response.json()
+                
                 clave_fecha = None
                 if 'expiracion' in data:
                     clave_fecha = 'expiracion'
@@ -86,7 +88,7 @@ def verificar_acceso(user_id):
         return False
 
 # ==============================================================================
-# SECCIÓN 4: LISTA DE COMANDOS
+# SECCIÓN 4: LISTA DE COMANDOS (TEXTO SIMPLE)
 # ==============================================================================
 def generar_lista_comandos():
     comandos = """ **RENIEC:**
@@ -114,7 +116,7 @@ def generar_lista_comandos():
 /telp 987654321 - Búsqueda titular
 /telx 44445555 - Telefonía general
 
-👤 **FACIAL:**
+ **FACIAL:**
 /facial [foto] - Reconocimiento facial masivo
 
  **PERSONAS:**
@@ -164,7 +166,7 @@ def generar_lista_comandos():
 💵 **SUNAT:**
 /ruc 20165465009 - RUC info completo
 
-👨‍👧 **FAMILIA:**
+👨👧 **FAMILIA:**
 /ag 44441111 - Árbol genealógico texto
 /ag2 44441111 - Árbol genealógico texto v2
 /agv 44441111 - Árbol genealógico visual PNG
@@ -173,7 +175,7 @@ def generar_lista_comandos():
  **MINEDU:**
 /minedu 44445555 - Notas Minedu PDF
 
-🚦 **MTC:**
+ **MTC:**
 /licencia 45454545 - Licencia de conducir
 /licenciapdf 45454545 - Licencia electrónica PDF
 /record 45454545 - Papeletas por DNI PDF
@@ -192,7 +194,7 @@ def generar_lista_comandos():
 /telarg 2284524520 - Búsqueda por teléfono Argentina
 /nmarg juan perez - Búsqueda por nombre Argentina
 
-⚙️ **GENERADOR:**
+ **GENERADOR:**
 /c4 44441111 - C4 azul generado
 /c4b 44441111 - C4 blanco generado
 /c4i 44441111 - Certificado de inscripción
@@ -207,12 +209,12 @@ def generar_lista_comandos():
 /dpm Juan Perez|Ingeniería de Sistemas - Diploma USC
 
 ━━━━━━━━━━━━━━━━━━━━
-📊 Total: 78 comandos disponibles
-💡 Usa los ejemplos mostrados como referencia"""
+ Total: 78 comandos disponibles
+ Usa los ejemplos mostrados como referencia"""
     return comandos
 
 # ==============================================================================
-# SECCIÓN 5: HANDLERS DE COMANDOS DEL BOT
+# SECCIÓN 5: HANDLERS DE COMANDOS
 # ==============================================================================
 @bot_client.on(events.NewMessage(incoming=True, pattern=r'(?i)^/cmds|^/menu|^/help|^/comandos'))
 async def cmds_handler(event):
@@ -256,9 +258,9 @@ async def bot_message_handler(event):
         print(f"\n{'='*50}")
         print(f"📩 [BOT] Mensaje recibido | Chat: {chat_id} | Sender: {sender_id}")
         
-        # PROCESAMIENTO DE CUENTA PRINCIPAL (Respuestas finales que vuelven del user_client)
+        # PROCESAMIENTO DE CUENTA PRINCIPAL (Respuestas de Provenet)
         if sender_id == main_account_id:
-            print("   → Es de la CUENTA PRINCIPAL (Resultado final)")
+            print("   → Es de la CUENTA PRINCIPAL")
             
             if "RESULTADO PARA:" in texto and not event.media:
                 lineas = texto.split("\n\n")
@@ -341,161 +343,271 @@ async def bot_message_handler(event):
 
 
 # ==============================================================================
-# SECCIÓN 7: HANDLERS DE LA CUENTA PRINCIPAL (USER CLIENT) - SEPARADOS Y BLINDADOS
+# SECCIÓN 7: HANDLER DE CUENTA PRINCIPAL (CORREGIDO - CRÍTICO)
 # ==============================================================================
-
-# 7.1: Recibe comando del Bot Axel y lo envía a Provenet
 @user_client.on(events.NewMessage(incoming=True))
-async def user_send_to_provenet_handler(event):
+async def user_receive_handler(event):
     global bot_id, main_account_id, consultas_activas
     
-    sender_id = event.sender_id
-    texto = event.raw_text or event.text or ""
-    
-    # Solo procesar si viene de nuestro propio bot
-    if bot_id is None or sender_id != bot_id:
-        return
-        
-    if "PROCESAR PARA:" not in texto:
-        return
-        
-    print(f"\n{'='*60}")
-    print(f"📩 [USER] Comando recibido del Bot Axel para enviar a Provenet")
-    
     try:
-        primera_linea = texto.split("\n\n")[0]
-        chat_destino = int(primera_linea.replace("PROCESAR PARA:", "").strip())
-    except Exception as e:
-        print(f"❌ Error extrayendo chat_destino: {e}")
-        return
-    
-    lineas = texto.split("\n\n")
-    if len(lineas) < 2:
-        return
-    
-    texto_original = lineas[1].strip()
-    if not texto_original and not event.media:
-        return
-
-    parametro = texto_original.split(' ', 1)[1].strip() if ' ' in texto_original else None
-    es_comando_nm = texto_original.lower().startswith('/nm') or texto_original.lower().startswith('nm ')
-    
-    print(f"   🎯 Destino: {chat_destino} | Comando: {texto_original}")
-    
-    try:
-        if event.media:
-            msg_enviado = await user_client.send_file(CODE_BOT, event.media, caption=texto_original)
-        else:
-            msg_enviado = await user_client.send_message(CODE_BOT, texto_original)
+        sender_id = event.sender_id
+        texto = event.raw_text or event.text or ""
         
-        # Registrar la consulta activa
-        consultas_activas[msg_enviado.id] = {
-            'chat_destino': chat_destino,
-            'comando': texto_original,
-            'parametro': parametro,
-            'time': datetime.now(),
-            'es_nm': es_comando_nm
-        }
-        print(f"   ✅ Enviado a Provenet. Request ID guardado: {msg_enviado.id}")
+        print(f"\n{'='*60}")
+        print(f"📩 [USER] Mensaje recibido en Cuenta Principal")
+        print(f"   Sender ID: {sender_id}")
+        print(f"   Bot ID (esperado): {bot_id}")
+        print(f"   Texto recibido: {repr(texto)}")
         
-    except Exception as e:
-        print(f"❌ Error enviando a Provenet: {e}")
-        await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n❌ Error: {e}")
-
-
-# 7.2: Recibe respuesta de Provenet y la reenvía INMEDIATAMENTE al Bot Axel (SIN ACUMULAR)
-@user_client.on(events.NewMessage(incoming=True))
-async def user_receive_from_provenet_handler(event):
-    global consultas_activas
-    
-    # Identificar si el mensaje viene de Provenet
-    chat = await event.get_chat()
-    is_provenet = False
-    if hasattr(chat, 'username') and chat.username and chat.username.replace('@', '').lower() == 'provenetdoxbot':
-        is_provenet = True
-    
-    if not is_provenet:
-        return # No es Provenet, ignorar este handler
-        
-    msg_text = event.text or ""
-    msg_id = event.id
-    
-    print(f"\n{'='*60}")
-    print(f"📩 [USER] Respuesta de Provenet recibida (Msg ID: {msg_id})")
-    
-    consulta_encontrada = None
-    request_id = None
-    
-    # MÉTODO 1: Es respuesta directa (reply) a nuestro mensaje enviado
-    if hasattr(event.message, 'reply_to_msg_id') and event.message.reply_to_msg_id:
-        reply_to = event.message.reply_to_msg_id
-        if reply_to in consultas_activas:
-            consulta_encontrada = consultas_activas[reply_to]
-            request_id = reply_to
-            print(f"   ✅ Coincide por REPLY_TO: {reply_to}")
-    
-    # MÉTODO 2: Coincidencia por parámetro (DNI, número, etc.) en el texto
-    if not consulta_encontrada and msg_text:
-        for req_id, consulta in consultas_activas.items():
-            parametro = consulta.get('parametro')
-            if parametro and parametro in msg_text:
-                # Verificar que sea reciente (últimos 90 segundos)
-                tiempo_diff = abs((datetime.now() - consulta['time']).total_seconds())
-                if tiempo_diff < 90:
-                    consulta_encontrada = consulta
-                    request_id = req_id
-                    print(f"   ✅ Coincide por PARÁMETRO '{parametro}' - Request ID: {req_id}")
-                    break
-    
-    # MÉTODO 3: Es un archivo/media y hay una consulta reciente (menos de 90 seg)
-    if not consulta_encontrada and event.media:
-        for req_id, consulta in consultas_activas.items():
-            tiempo_diff = abs((datetime.now() - consulta['time']).total_seconds())
-            if tiempo_diff < 90:
-                consulta_encontrada = consulta
-                request_id = req_id
-                print(f"   ✅ Coincide por MEDIA RECIENTE - Request ID: {req_id}")
-                break
-                
-    if not consulta_encontrada:
-        print("   ⚠️ Respuesta no asociada a ninguna consulta activa. Ignorando.")
-        return
-        
-    chat_destino = consulta_encontrada['chat_destino']
-    
-    # Evitar ecos (que el comando enviado se procese como respuesta)
-    comando_original = consulta_encontrada['comando'].strip().lower()
-    if msg_text.strip().lower() == comando_original:
-        print("   ⚠️ Ignorando eco del comando original.")
-        return
-
-    # 🔑 CRÍTICO: Reenviar SOLO ESTE MENSAJE individualmente, sin acumular ni esperar
-    try:
-        header = f"RESULTADO PARA: {chat_destino}\n\n"
-        
-        if event.media:
-            await user_client.send_file(BOT_USERNAME, event.media, caption=header + msg_text)
-        else:
-            await user_client.send_message(BOT_USERNAME, header + msg_text)
+        # Solo procesar mensajes del bot
+        if bot_id is None or sender_id != bot_id:
+            return
             
-        print(f"   ✅ Mensaje {msg_id} reenviado individualmente a {chat_destino}")
+        # ==============================================================================
+        # CASO 1: MENSAJE DE "PROCESAR PARA:" (viene del bot secundario)
+        # ==============================================================================
+        if "PROCESAR PARA:" in texto:
+            print("   → Mensaje de PROCESAR PARA detectado")
+            
+            try:
+                primera_linea = texto.split("\n\n")[0]
+                chat_destino = int(primera_linea.replace("PROCESAR PARA:", "").strip())
+            except Exception as e:
+                print(f"❌ Error extrayendo chat_destino: {e}")
+                return
+            
+            lineas = texto.split("\n\n")
+            if len(lineas) < 2:
+                print("⚠️ Formato incorrecto")
+                return
+            
+            texto_original = lineas[1].strip()
+            
+            if not texto_original and not event.media:
+                print("⚠️ Comando vacío")
+                return
+
+            print(f"   ✅ chat_destino extraído: {chat_destino}")
+            print(f"   ✅ texto_original a enviar: {repr(texto_original)}")
+            
+            #  EXTRAER PARÁMETRO DEL COMANDO (ej: "/dni 72700511" → "72700511")
+            parametro = None
+            if ' ' in texto_original:
+                parametro = texto_original.split(' ', 1)[1].strip()
+            
+            es_comando_nm = texto_original.lower().startswith('/nm') or texto_original.lower().startswith('nm ')
+            
+            print(f"   🚀 ENVIANDO CONSULTA AL BOT PROVENET ({CODE_BOT})...")
+            try:
+                if event.media:
+                    print(f"   📎 Enviando con media adjunto...")
+                    msg_enviado = await user_client.send_file(CODE_BOT, event.media, caption=texto_original)
+                else:
+                    print(f"   📝 Enviando solo texto...")
+                    msg_enviado = await user_client.send_message(CODE_BOT, texto_original)
+                
+                msg_enviado_id = msg_enviado.id
+                msg_enviado_time = msg_enviado.date
+                
+                # 🔑 ALMACENAR CONSULTA CON SU ID ÚNICO, PARÁMETRO Y TIEMPO LÍMITE
+                consultas_activas[msg_enviado_id] = {
+                    'chat_destino': chat_destino,
+                    'comando': texto_original,
+                    'parametro': parametro,
+                    'time': datetime.now(),
+                    'timeout': 35,  # ⏱️ Límite máximo: 35 segundos
+                    'es_nm': es_comando_nm,
+                    'mensajes_recibidos': [],
+                    'mensajes_enviados_ids': set(),
+                    'ya_respondio': False  # 🔑 Para evitar respuestas duplicadas
+                }
+                
+                print(f"   ✅ Consulta registrada - Msg ID: {msg_enviado_id} → Chat: {chat_destino} | Timeout: 35s")
+                
+                #  INICIAR TAREA DE TIMEOUT
+                asyncio.create_task(controlar_timeout(msg_enviado_id, chat_destino, 35))
+                
+            except Exception as e:
+                print(f"   ❌ [ERROR CRÍTICO] Fallo al enviar a Provenet: {e}")
+                import traceback
+                traceback.print_exc()
+                await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n❌ Error: {e}")
+            
+            return
+        
+        # ==============================================================================
+        # CASO 2: RESPUESTA DE PROVENET (filtrar por consulta activa)
+        # ==============================================================================
+        print(f"   → Posible respuesta de Provenet")
+        
+        # Buscar a qué consulta pertenece esta respuesta
+        consulta_encontrada = None
+        msg_id_asociado = None
+        
+        # Extraer texto del mensaje (si es texto)
+        msg_text = event.message.text or event.message.raw_text or ""
+        
+        # Verificar si es una respuesta a alguna consulta activa
+        for msg_id, consulta in consultas_activas.items():
+            # 1. Verificar si es respuesta directa (reply_to_msg_id)
+            if hasattr(event.message, 'reply_to_msg_id'):
+                if event.message.reply_to_msg_id == msg_id:
+                    consulta_encontrada = consulta
+                    msg_id_asociado = msg_id
+                    break
+            
+            # 2. Verificar por parámetro (ej: si el DNI 72700511 está en la respuesta)
+            parametro = consulta['parametro']
+            if parametro and parametro in msg_text:
+                # Verificar que no haya excedido el timeout
+                tiempo_transcurrido = (datetime.now() - consulta['time']).total_seconds()
+                if tiempo_transcurrido <= consulta['timeout']:
+                    consulta_encontrada = consulta
+                    msg_id_asociado = msg_id
+                    break
+        
+        if not consulta_encontrada:
+            print("   ⚠️ Respuesta no asociada a ninguna consulta activa - Ignorando")
+            return
+        
+        # 🔑 CRÍTICO: Verificar si YA se respondió esta consulta (evitar cruce entre chats)
+        if consulta_encontrada.get('ya_respondio', False):
+            print(f"   ⚠️ Esta consulta YA fue respondida - Ignorando mensaje adicional")
+            return
+        
+        print(f"   ✅ Respuesta asociada a consulta - Chat destino: {consulta_encontrada['chat_destino']}")
+        print(f"   → Comando original: {consulta_encontrada['comando']}")
+        print(f"   → Parámetro: {consulta_encontrada['parametro']}")
+        
+        # 🔑 CRÍTICO: Evitar que el comando original sea procesado como respuesta
+        comando_original = consulta_encontrada['comando'].strip().lower()
+        msg_text_lower = msg_text.strip().lower()
+        
+        if msg_text_lower == comando_original:
+            print("   ⚠️ Ignorando mensaje que es idéntico al comando original (echo)")
+            return
+        
+        # 🔑 CRÍTICO: Verificar si YA se envió este mensaje específico (evitar duplicados)
+        msg_id_provenet = event.message.id
+        if msg_id_provenet in consulta_encontrada.get('mensajes_enviados_ids', set()):
+            print(f"   ⚠️ Mensaje {msg_id_provenet} YA fue enviado - Evitando duplicado")
+            return
+        
+        # Agregar mensaje a la consulta
+        consulta_encontrada['mensajes_recibidos'].append(event.message)
+        
+        # 🔑 CRÍTICO: Marcar este mensaje como enviado
+        if 'mensajes_enviados_ids' not in consulta_encontrada:
+            consulta_encontrada['mensajes_enviados_ids'] = set()
+        consulta_encontrada['mensajes_enviados_ids'].add(msg_id_provenet)
+        
+        # Marcar que ya se respondió (evita cruce con otras consultas)
+        consulta_encontrada['ya_respondio'] = True
+        
+        # Esperar un poco para capturar mensajes secuenciales
+        await asyncio.sleep(1.5)
+        
+        # Verificar si llegaron más mensajes
+        mensajes_finales = consulta_encontrada['mensajes_recibidos']
+        
+        # ==============================================================================
+        # ENVÍO DE RESULTADOS (SOLO al chat correcto)
+        # ==============================================================================
+        chat_destino = consulta_encontrada['chat_destino']
+        total = len(mensajes_finales)
+        
+        print(f"   📤 Enviando {total} mensaje(s) al chat {chat_destino}")
+        
+        if total == 0:
+            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n⚠️ Sin respuesta")
+        else:
+            # Si es /nm y hay múltiples mensajes → crear TXT
+            if consulta_encontrada['es_nm'] and total > 1:
+                print(f"   📄 Creando archivo TXT para /nm")
+                
+                contenido_completo = ""
+                for idx, msg in enumerate(mensajes_finales, 1):
+                    if msg.text:
+                        contenido_completo += f"\n{'='*60}\n"
+                        contenido_completo += f" RESULTADO {idx} DE {total}\n"
+                        contenido_completo += f"{'='*60}\n\n"
+                        contenido_completo += msg.text
+                        contenido_completo += f"\n\n"
+                
+                nombre_archivo = f"RESULTADO_NM_{chat_destino}.txt"
+                
+                await user_client.send_file(
+                    BOT_USERNAME,
+                    contenido_completo.encode('utf-8'),
+                    caption=f"**RESULTADO PARA: {chat_destino}**\n\n📦 {total} resultados",
+                    filename=nombre_archivo
+                )
+                print(f"   ✅ Archivo TXT enviado")
+            else:
+                # Enviar normalmente
+                for idx, msg in enumerate(mensajes_finales, 1):
+                    try:
+                        header = f"RESULTADO PARA: {chat_destino}\n\n"
+                        
+                        if total > 1:
+                            header += f"**📦 PARTE {idx} DE {total}**\n\n"
+                        
+                        if msg.media:
+                            await user_client.send_file(BOT_USERNAME, msg.media, caption=header + (msg.text or ""))
+                        else:
+                            await user_client.send_message(BOT_USERNAME, header + msg.text)
+                        
+                        await asyncio.sleep(0.5)
+                        
+                    except Exception as e:
+                        print(f"   ❌ Error enviando parte {idx}: {e}")
+        
+        # Limpiar consulta completada
+        if msg_id_asociado and msg_id_asociado in consultas_activas:
+            del consultas_activas[msg_id_asociado]
+        
+        print(f"   🎉 Consulta completada y eliminada")
+        print(f"{'='*60}\n")
         
     except Exception as e:
-        print(f"   ❌ Error al reenviar: {e}")
-        
-    # Limpiar consulta después de un tiempo prudencial (60 segundos)
-    if request_id:
-        asyncio.create_task(limpiar_consulta(request_id, 60))
-        
-    print(f"{'='*60}\n")
+        print(f" [USER] ERROR GENERAL: {e}")
+        import traceback
+        traceback.print_exc()
 
 
-async def limpiar_consulta(request_id, delay):
-    """Elimina una consulta de la memoria después de un delay"""
-    await asyncio.sleep(delay)
+# ==============================================================================
+# 🔑 NUEVA FUNCIÓN: CONTROL DE TIMEOUT (35 SEGUNDOS MÁXIMO)
+# ==============================================================================
+async def controlar_timeout(request_id, chat_destino, timeout_segundos=35):
+    """
+    Monitorea el tiempo de espera de una consulta.
+    Si pasan 35 segundos sin respuesta, envía mensaje de error.
+    """
+    await asyncio.sleep(timeout_segundos)
+    
+    # Verificar si la consulta aún existe y no ha sido respondida
     if request_id in consultas_activas:
-        del consultas_activas[request_id]
-        print(f"   🗑️ Consulta {request_id} eliminada de memoria")
+        consulta = consultas_activas[request_id]
+        
+        if not consulta.get('ya_respondio', False):
+            print(f"   ⏱️ TIMEOUT: Consulta {request_id} excedió {timeout_segundos}s sin respuesta")
+            
+            # Enviar mensaje de timeout al usuario
+            try:
+                await user_client.send_message(
+                    BOT_USERNAME,
+                    f"RESULTADO PARA: {chat_destino}\n\n"
+                    f"⚠️ **No se obtuvo información de la consulta.**\n\n"
+                    f"Posiblemente no existe en la base de datos o el servicio está lento.\n"
+                    f"Si crees que es error, intenta nuevamente."
+                )
+                print(f"   ✅ Mensaje de timeout enviado a {chat_destino}")
+            except Exception as e:
+                print(f"   ❌ Error enviando timeout: {e}")
+            
+            # Limpiar consulta
+            del consultas_activas[request_id]
+            print(f"   🗑️ Consulta {request_id} eliminada por timeout")
 
 
 # ==============================================================================
