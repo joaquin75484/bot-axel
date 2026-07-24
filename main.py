@@ -35,15 +35,13 @@ processing_messages = {}
 pending_media = {}
 resultados_enviados = {}
 
-# 🔑 NUEVO: Diccionario para rastrear CADA consulta individualmente
-# Estructura: {request_id: {chat_destino, comando, parametro, time, es_nm, mensajes_recibidos}}
+# 🔑 Diccionario para rastrear CADA consulta individualmente
 consultas_activas = {}
 
 # ==============================================================================
 # FUNCIÓN PARA VERIFICAR ACCESO EN CLOUDFLARE KV
 # ==============================================================================
 def verificar_acceso(user_id):
-    """Verifica si el usuario tiene acceso en Cloudflare KV"""
     try:
         timestamp = int(time.time())
         url = f"https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/storage/kv/namespaces/{KV_NAMESPACE_ID}/values/user:{user_id}?t={timestamp}"
@@ -61,7 +59,6 @@ def verificar_acceso(user_id):
         if response.status_code == 200:
             try:
                 data = response.json()
-                
                 clave_fecha = None
                 if 'expiracion' in data:
                     clave_fecha = 'expiracion'
@@ -89,7 +86,7 @@ def verificar_acceso(user_id):
         return False
 
 # ==============================================================================
-# SECCIÓN 4: LISTA DE COMANDOS (TEXTO SIMPLE)
+# SECCIÓN 4: LISTA DE COMANDOS
 # ==============================================================================
 def generar_lista_comandos():
     comandos = """ **RENIEC:**
@@ -215,7 +212,7 @@ def generar_lista_comandos():
     return comandos
 
 # ==============================================================================
-# SECCIÓN 5: HANDLERS DE COMANDOS
+# SECCIÓN 5: HANDLERS DE COMANDOS DEL BOT
 # ==============================================================================
 @bot_client.on(events.NewMessage(incoming=True, pattern=r'(?i)^/cmds|^/menu|^/help|^/comandos'))
 async def cmds_handler(event):
@@ -259,7 +256,7 @@ async def bot_message_handler(event):
         print(f"\n{'='*50}")
         print(f"📩 [BOT] Mensaje recibido | Chat: {chat_id} | Sender: {sender_id}")
         
-        # PROCESAMIENTO DE CUENTA PRINCIPAL (Respuestas que vuelven del user_client)
+        # PROCESAMIENTO DE CUENTA PRINCIPAL (Respuestas finales que vuelven del user_client)
         if sender_id == main_account_id:
             print("   → Es de la CUENTA PRINCIPAL (Resultado final)")
             
@@ -332,7 +329,6 @@ async def bot_message_handler(event):
         processing_msg = await event.reply("⏳ Procesando...")
         processing_messages[chat_id] = processing_msg.id
 
-        # ✅ Usar main_account_id (número) para evitar fallos de resolución
         if event.media:
             caption_principal = f"PROCESAR PARA: {chat_id}\n\n{texto}"
             await bot_client.send_file(main_account_id, event.media, caption=caption_principal)
@@ -398,8 +394,7 @@ async def user_send_to_provenet_handler(event):
             'comando': texto_original,
             'parametro': parametro,
             'time': datetime.now(),
-            'es_nm': es_comando_nm,
-            'mensajes_recibidos': []
+            'es_nm': es_comando_nm
         }
         print(f"   ✅ Enviado a Provenet. Request ID guardado: {msg_enviado.id}")
         
@@ -408,7 +403,7 @@ async def user_send_to_provenet_handler(event):
         await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n❌ Error: {e}")
 
 
-# 7.2: Recibe respuesta de Provenet y la reenvía al Bot Axel
+# 7.2: Recibe respuesta de Provenet y la reenvía INMEDIATAMENTE al Bot Axel (SIN ACUMULAR)
 @user_client.on(events.NewMessage(incoming=True))
 async def user_receive_from_provenet_handler(event):
     global consultas_activas
@@ -426,7 +421,7 @@ async def user_receive_from_provenet_handler(event):
     msg_id = event.id
     
     print(f"\n{'='*60}")
-    print(f"📩 [USER] Posible respuesta de Provenet recibida (Msg ID: {msg_id})")
+    print(f"📩 [USER] Respuesta de Provenet recibida (Msg ID: {msg_id})")
     
     consulta_encontrada = None
     request_id = None
@@ -474,43 +469,23 @@ async def user_receive_from_provenet_handler(event):
         print("   ⚠️ Ignorando eco del comando original.")
         return
 
-    # Acumular mensaje
-    consulta_encontrada['mensajes_recibidos'].append(event.message)
-    
-    # Pequeña pausa para permitir que lleguen mensajes múltiples (ej: PDF + Texto)
-    await asyncio.sleep(1.5)
-    
-    mensajes = consulta_encontrada['mensajes_recibidos']
-    total = len(mensajes)
-    
-    print(f"   📤 Reenviando {total} mensaje(s) al chat {chat_destino}")
-    
+    # 🔑 CRÍTICO: Reenviar SOLO ESTE MENSAJE individualmente, sin acumular ni esperar
     try:
-        if total == 1:
-            header = f"RESULTADO PARA: {chat_destino}\n\n"
-            if event.media:
-                await user_client.send_file(BOT_USERNAME, event.media, caption=header + msg_text)
-            else:
-                await user_client.send_message(BOT_USERNAME, header + msg_text)
+        header = f"RESULTADO PARA: {chat_destino}\n\n"
+        
+        if event.media:
+            await user_client.send_file(BOT_USERNAME, event.media, caption=header + msg_text)
         else:
-            for idx, msg in enumerate(mensajes, 1):
-                header = f"RESULTADO PARA: {chat_destino}\n\n"
-                if total > 1:
-                    header += f"**📦 PARTE {idx} DE {total}**\n\n"
-                
-                if msg.media:
-                    await user_client.send_file(BOT_USERNAME, msg.media, caption=header + (msg.text or ""))
-                else:
-                    await user_client.send_message(BOT_USERNAME, header + (msg.text or ""))
-                await asyncio.sleep(0.3)
-                
-        print(f"   ✅ Reenviado correctamente al Bot Axel")
+            await user_client.send_message(BOT_USERNAME, header + msg_text)
+            
+        print(f"   ✅ Mensaje {msg_id} reenviado individualmente a {chat_destino}")
+        
     except Exception as e:
         print(f"   ❌ Error al reenviar: {e}")
         
-    # Limpiar consulta después de un tiempo
+    # Limpiar consulta después de un tiempo prudencial (60 segundos)
     if request_id:
-        asyncio.create_task(limpiar_consulta(request_id, 10))
+        asyncio.create_task(limpiar_consulta(request_id, 60))
         
     print(f"{'='*60}\n")
 
