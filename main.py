@@ -851,7 +851,7 @@ async def bot_message_handler(event):
         traceback.print_exc()
 
 # ==============================================================================
-# SECCIÓN 8: HANDLER DE CUENTA PRINCIPAL (CORREGIDO - ENVÍA TODOS LOS MENSAJES)
+# SECCIÓN 8: HANDLER DE CUENTA PRINCIPAL (FINAL - CAPTURA TODO: TEXTO, FOTO, PDF, CUALQUIER CANTIDAD)
 # ==============================================================================
 @user_client.on(events.NewMessage(incoming=True))
 async def user_receive_handler(event):
@@ -862,196 +862,150 @@ async def user_receive_handler(event):
         texto = event.raw_text or event.text or ""
         
         print(f"\n{'='*50}")
-        print(f"📩 [USER] Mensaje recibido")
-        print(f"   Sender ID: {sender_id}")
-        print(f"   Texto: {texto[:100]}...")
+        print(f"📩 [USER] Mensaje recibido del Bot")
         
-        if bot_id is None:
-            print("   ⚠️ bot_id es None, ignorando")
+        if bot_id is None or sender_id != bot_id:
             return
-        
-        if sender_id != bot_id:
-            print(f"   ❌ Ignorado: sender_id ({sender_id}) != bot_id ({bot_id})")
-            return
-        
-        print("   ✅ Paso 1: Viene del bot")
         
         if "PROCESAR PARA:" not in texto:
-            print(f"   ⚠️ Ignorado: no contiene 'PROCESAR PARA:'")
             return
-        
-        print("   ✅ Paso 2: Es para procesar")
         
         try:
             primera_linea = texto.split("\n\n")[0]
             chat_destino = int(primera_linea.replace("PROCESAR PARA:", "").strip())
-            print(f"   ✅ Paso 3: Chat destino = {chat_destino}")
-        except Exception as e:
-            print(f"   ❌ Paso 3 falló: {e}")
+        except Exception:
             return
         
         lineas = texto.split("\n\n")
         if len(lineas) < 2:
-            print("   ❌ Formato incorrecto (menos de 2 líneas)")
             return
         
         texto_original = lineas[1].strip()
-        print(f"   ✅ Texto original: {texto_original}")
-        
-        partes = texto_original.split()
-        comando_guia = partes[0].replace('/', '').lower() if partes else ""
-        
-        numero_buscar = " ".join(partes[1:]) if len(partes) > 1 else ""
-        print(f"   ✅ Comando guía: '{comando_guia}' | Número a buscar: '{numero_buscar}'")
+        print(f"   ✅ Comando a enviar a Provenet: {texto_original}")
         
         print(f"   → Enviando a Provenet...")
         try:
             if event.media:
-                print(f"   → Media detectado, enviando texto + media a Provenet")
                 msg_enviado = await user_client.send_file(CODE_BOT, event.media, caption=texto_original)
             else:
                 msg_enviado = await user_client.send_message(CODE_BOT, texto_original)
-            print("   ✅ Enviado a Provenet")
             
             msg_enviado_id = msg_enviado.id
             msg_enviado_time = msg_enviado.date
-            print(f"   → Mensaje enviado ID: {msg_enviado_id}, Time: {msg_enviado_time}")
+            print("   ✅ Enviado a Provenet correctamente")
             
         except Exception as e:
-            print(f"   ❌ Error al enviar a Provenet: {e}")
-            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n❌ Error: {e}")
+            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n❌ Error al enviar: {e}")
             return
         
-        print("   ⏳ Iniciando espera (máx 45 segundos, verifica cada 3s)...")
+        print("   ⏳ Esperando respuesta (máx 35s, revisa cada 3s)...")
         
-        mensajes_validos = []
-        palabras_basura = ['espera', 'consultando', 'cargando', 'procesando', 'generando', 'por favor']
+        mensajes_finales = []
+        ids_ya_procesados = set()
+        palabras_basura = ['espera', 'consultando', 'cargando', 'procesando', 'generando', 'por favor', 'un momento']
         
-        tiempo_maximo = 45
-        intervalo_verificacion = 3
+        tiempo_maximo = 35
         tiempo_esperado = 0
-        tiempo_sin_nuevos_mensajes = 0
         
+        # 1. BUCLE DE ESPERA Y CAPTURA
         while tiempo_esperado < tiempo_maximo:
-            espera = intervalo_verificacion
-            
-            print(f"    Esperando {espera} segundos... (total: {tiempo_esperado}s/{tiempo_maximo}s)")
-            await asyncio.sleep(espera)
-            tiempo_esperado += espera
-            
-            print(f"   🔍 Verificando respuestas después de {tiempo_esperado}s...")
+            await asyncio.sleep(3)
+            tiempo_esperado += 3
             
             try:
                 mensajes = await user_client.get_messages(CODE_BOT, limit=100)
-                print(f"   → {len(mensajes)} mensajes encontrados")
                 
-                mensajes_validos_temp = []
-                
-                for i, msg in enumerate(mensajes):
+                for msg in mensajes:
+                    if msg.id in ids_ya_procesados:
+                        continue
+                        
                     msg_text = msg.text or msg.raw_text or ""
-                    msg_has_media = msg.media is not None
                     msg_date = msg.date
                     
-                    print(f"      Mensaje {i+1}: ID={msg.id}, text='{msg_text[:40]}...', media={msg_has_media}, date={msg_date}")
+                    # Filtros estrictos para ignorar basura
+                    if msg_date <= msg_enviado_time: continue
+                    if msg.id == msg_enviado_id: continue
+                    if msg_text and any(x in msg_text.lower() for x in palabras_basura): continue
                     
-                    # ❌ IGNORAR: Mensajes anteriores al enviado
-                    if msg_date <= msg_enviado_time:
-                        print(f"         → Ignorado (anterior al enviado)")
-                        continue
-                    
-                    # ❌ IGNORAR: El mensaje que nosotros enviamos
-                    if msg.id == msg_enviado_id:
-                        print(f"         → Ignorado (es el que enviamos)")
-                        continue
-                    
-                    # ❌ IGNORAR: Mensajes de "basura" (espera, cargando, etc.)
-                    if msg_text and any(x in msg_text.lower() for x in palabras_basura):
-                        print(f"         → Ignorado (mensaje de espera/cargando)")
-                        continue
-                    
-                    # ❌ IGNORAR: Eco del comando original
                     comando_limpio = texto_original.strip().lower()
                     mensaje_limpio = msg_text.strip().lower()
+                    if mensaje_limpio == comando_limpio: continue
+                    if len(mensaje_limpio) < len(comando_limpio) + 10 and comando_limpio in mensaje_limpio: continue
                     
-                    if mensaje_limpio == comando_limpio:
-                        print(f"         → Ignorado (eco exacto del comando)")
-                        continue
+                    # ✅ ES UN MENSAJE VÁLIDO (Texto, Foto o PDF)
+                    mensajes_finales.append(msg)
+                    ids_ya_procesados.add(msg.id)
+                
+                # 🔑 REGLA DE ORO: Si ya llegó al menos 1 mensaje, esperamos solo 2 segundos extra
+                # para atrapar el resto si Provenet los mandó con diferencia de milisegundos.
+                if len(mensajes_finales) > 0:
+                    print(f"   ✅ ¡Respuesta detectada a los {tiempo_esperado}s! Esperando 2s extra por si hay más...")
+                    await asyncio.sleep(2)
+                    tiempo_esperado += 2
                     
-                    if len(mensaje_limpio) < len(comando_limpio) + 10 and comando_limpio in mensaje_limpio:
-                        print(f"         → Ignorado (eco parcial del comando)")
-                        continue
+                    # Revisión final rápida para no perder nada
+                    mensajes_extra = await user_client.get_messages(CODE_BOT, limit=100)
+                    for msg in mensajes_extra:
+                        if msg.id not in ids_ya_procesados:
+                            msg_text = msg.text or msg.raw_text or ""
+                            msg_date = msg.date
+                            
+                            if msg_date <= msg_enviado_time: continue
+                            if msg.id == msg_enviado_id: continue
+                            if msg_text and any(x in msg_text.lower() for x in palabras_basura): continue
+                            
+                            comando_limpio = texto_original.strip().lower()
+                            mensaje_limpio = msg_text.strip().lower()
+                            if mensaje_limpio == comando_limpio: continue
+                            if len(mensaje_limpio) < len(comando_limpio) + 10 and comando_limpio in mensaje_limpio: continue
+                            
+                            mensajes_finales.append(msg)
+                            ids_ya_procesados.add(msg.id)
                     
-                    # ✅ ACEPTAR TODO LO DEMÁS (sin filtros estrictos de longitud o palabras clave)
-                    # Esto garantiza que se capturen mensajes como "La consulta se hizo de manera exitosa"
-                    print(f"         ✅ VÁLIDO - Agregado a la lista")
-                    mensajes_validos_temp.append(msg)
-                
-                mensajes_validos_temp.sort(key=lambda x: x.date)
-                
-                nuevos_ids = [msg.id for msg in mensajes_validos_temp if msg.id not in [m.id for m in mensajes_validos]]
-                
-                if nuevos_ids:
-                    print(f"   ✅ Detectados {len(nuevos_ids)} NUEVOS mensajes válidos")
-                    # ✅ CORRECCIÓN: AGREGAR nuevos mensajes sin perder los anteriores
-                    mensajes_validos = list({msg.id: msg for msg in mensajes_validos + mensajes_validos_temp}.values())
-                    tiempo_sin_nuevos_mensajes = 0
-                else:
-                    tiempo_sin_nuevos_mensajes += espera
-                    print(f"   ⏱️ Sin nuevos mensajes por {tiempo_sin_nuevos_mensajes}s")
-                
-                # 🔑 CAMBIO CLAVE: Aumentado de 15 a 30 segundos para dar tiempo a que lleguen múltiples mensajes
-                if len(mensajes_validos) > 0 and tiempo_sin_nuevos_mensajes >= 30:
-                    print(f"   ✅ Ya no llegan más mensajes después de {tiempo_sin_nuevos_mensajes}s")
-                    break
-                
-                if tiempo_esperado >= tiempo_maximo:
-                    print(f"   ⏰ Timeout de {tiempo_maximo}s alcanzado")
-                    break
-                
+                    break # Salimos del bucle, ya tenemos todo el paquete
+                    
             except Exception as e:
-                print(f"   ⚠️ Error al verificar: {e}")
+                print(f"   ⚠️ Error verificando: {e}")
                 continue
-        
-        mensajes_validos = list({msg.id: msg for msg in mensajes_validos}.values())
-        mensajes_validos.sort(key=lambda x: x.date)
-        
-        if not mensajes_validos:
-            print(f"   ⚠️ No se encontró respuesta válida después de {tiempo_maximo}s")
-            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n⚠️ ERROR: No se recibió respuesta en {tiempo_maximo} segundos.")
-            print("   ✅ Mensaje de timeout enviado al bot")
-            return
-        
-        print(f"   📊 Total de mensajes válidos capturados: {len(mensajes_validos)}")
-        
-        try:
-            # ✅ ENVIAR TODOS LOS MENSAJES CAPTURADOS (NO SOLO UNO)
-            for msg in mensajes_validos:
-                header = f"RESULTADO PARA: {chat_destino}\n\n"
-                
-                if msg.media:
-                    texto_completo = header + (msg.text or "")
-                    await user_client.send_file(BOT_USERNAME, msg.media, caption=texto_completo)
-                    print(f"   ✅ Enviado: media + texto")
-                elif msg.text:
-                    await user_client.send_message(BOT_USERNAME, header + msg.text)
-                    print(f"   ✅ Enviado: solo texto")
-                
-                await asyncio.sleep(0.3)
+
+        # 2. ENVÍO DE TODOS LOS MENSAJES CAPTURADOS (1, 2, 7 o 10, no importa)
+        if not mensajes_finales:
+            print("   ⚠️ No se recibió respuesta en 35s")
+            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n⚠️ ERROR: Sin respuesta en 35s")
+        else:
+            total = len(mensajes_finales)
+            print(f"   📦 ¡ÉXITO! Se capturaron {total} mensaje(s). Enviando al usuario...")
             
-            print(f"   ✅ TODOS los {len(mensajes_validos)} mensajes enviados al bot")
-            
-        except Exception as e:
-            print(f"   ❌ Error al enviar al bot: {e}")
-            import traceback
-            traceback.print_exc()
+            for idx, msg in enumerate(mensajes_finales, 1):
+                try:
+                    header = f"RESULTADO PARA: {chat_destino}\n\n"
+                    
+                    # 🔑 IDENTIFICADOR AUTOMÁTICO: Si hay más de 1, le pone "PARTE 1 DE 2", etc.
+                    if total > 1:
+                        header += f"**📦 PARTE {idx} DE {total}**\n\n"
+                    
+                    # Maneja tanto FOTOS/PDFs como SOLO TEXTO
+                    if msg.media:
+                        await user_client.send_file(BOT_USERNAME, msg.media, caption=header + (msg.text or ""))
+                        print(f"   ✅ PARTE {idx} enviada (con Foto/PDF)")
+                    else:
+                        await user_client.send_message(BOT_USERNAME, header + msg.text)
+                        print(f"   ✅ PARTE {idx} enviada (solo texto)")
+                    
+                    await asyncio.sleep(0.5) # Pequeña pausa para que Telegram no bloquee el envío masivo
+                    
+                except Exception as e:
+                    print(f"   ❌ Error enviando parte {idx}: {e}")
+                    # El 'continue' implícito del try/except asegura que si falla el 2, intente el 3.
+
+            print(f"   🎉 PROCESO COMPLETADO: {total} mensaje(s) entregados.")
         
         print(f"{'='*50}\n")
         
     except Exception as e:
-        print(f"❌ [USER] ERROR GENERAL: {e}")
+        print(f"❌ [USER] ERROR GENERAL EN SECCIÓN 8: {e}")
         import traceback
         traceback.print_exc()
-
 # ==============================================================================
 # SECCIÓN 9: FUNCIÓN MAIN
 # ==============================================================================
