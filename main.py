@@ -852,7 +852,7 @@ async def bot_message_handler(event):
 
 
 # ==============================================================================
-# SECCIÓN 8: HANDLER DE CUENTA PRINCIPAL (DEFINITIVO - CAPTURA TODO: TEXTO, FOTO, PDF, CUALQUIER CANTIDAD)
+# SECCIÓN 8: HANDLER DE CUENTA PRINCIPAL (TXT PARA /nm - TODO EN UNO)
 # ==============================================================================
 @user_client.on(events.NewMessage(incoming=True))
 async def user_receive_handler(event):
@@ -884,6 +884,9 @@ async def user_receive_handler(event):
         texto_original = lineas[1].strip()
         print(f"   ✅ Comando a enviar a Provenet: {texto_original}")
         
+        # 🔑 DETECTAR SI ES COMANDO /nm (BÚSQUEDA POR NOMBRES)
+        es_comando_nm = texto_original.lower().startswith('/nm') or texto_original.lower().startswith('nm ')
+        
         print(f"   → Enviando a Provenet...")
         try:
             if event.media:
@@ -907,9 +910,9 @@ async def user_receive_handler(event):
         
         tiempo_maximo = 35
         tiempo_esperado = 0
-        tiempo_sin_nuevos = 0  # 🔑 CLAVE: Contador de segundos sin recibir nada nuevo
+        tiempo_sin_nuevos = 0
         
-        # 1. BUCLE DE ESPERA INTELIGENTE (CON CONTADOR DE SILENCIO)
+        # BUCLE DE ESPERA INTELIGENTE
         while tiempo_esperado < tiempo_maximo:
             await asyncio.sleep(3)
             tiempo_esperado += 3
@@ -935,66 +938,94 @@ async def user_receive_handler(event):
                     if mensaje_limpio == comando_limpio: continue
                     if len(mensaje_limpio) < len(comando_limpio) + 10 and comando_limpio in mensaje_limpio: continue
                     
-                    # ✅ ES UN MENSAJE VÁLIDO (Texto, Foto o PDF)
+                    # ✅ ES UN MENSAJE VÁLIDO
                     mensajes_finales.append(msg)
                     ids_ya_procesados.add(msg.id)
                     hay_nuevos = True
-                    print(f"   📥 Capturado: '{msg_text[:40]}...'")
+                    print(f"   📥 Capturado mensaje {len(mensajes_finales)}")
                 
                 if hay_nuevos:
-                    print(f"   ✅ Total capturados hasta ahora: {len(mensajes_finales)}")
-                    tiempo_sin_nuevos = 0  # 🔑 RESETEA EL RELOJ PORQUE LLEGÓ ALGO
+                    print(f"   ✅ Total capturados: {len(mensajes_finales)}")
+                    tiempo_sin_nuevos = 0
                 else:
                     tiempo_sin_nuevos += 3
-                    print(f"   ⏱️ Sin mensajes nuevos por {tiempo_sin_nuevos}s")
                 
-                # 🔑 REGLA DE ORO: Si ya tenemos mensajes y pasan 6 segundos seguidos sin llegar nada nuevo, terminamos.
+                # Si pasan 6 segundos sin nada nuevo, terminamos
                 if len(mensajes_finales) > 0 and tiempo_sin_nuevos >= 6:
-                    print(f"   ✅ No llegan más mensajes. Total final: {len(mensajes_finales)}")
+                    print(f"   ✅ No llegan más mensajes. Total: {len(mensajes_finales)}")
                     break
                     
             except Exception as e:
-                print(f"   ⚠️ Error verificando: {e}")
+                print(f"   ️ Error: {e}")
                 continue
 
-        # 2. ENVÍO DE TODOS LOS MENSAJES CAPTURADOS (1, 2, 7 o 10, no importa)
+        # 🔑 ENVÍO SEGÚN EL TIPO DE COMANDO
         if not mensajes_finales:
-            print("   ⚠️ No se recibió respuesta en 35s")
-            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n⚠️ ERROR: Sin respuesta en 35s")
+            print("   ⚠️ No se recibió respuesta")
+            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n️ ERROR: Sin respuesta")
         else:
             total = len(mensajes_finales)
-            print(f"   📦 ¡ÉXITO! Se capturaron {total} mensaje(s). Enviando al usuario...")
             
-            for idx, msg in enumerate(mensajes_finales, 1):
-                try:
-                    header = f"RESULTADO PARA: {chat_destino}\n\n"
-                    
-                    # 🔑 IDENTIFICADOR AUTOMÁTICO: Si hay más de 1, le pone "PARTE 1 DE 2", etc.
-                    if total > 1:
-                        header += f"**📦 PARTE {idx} DE {total}**\n\n"
-                    
-                    # Maneja tanto FOTOS/PDFs como SOLO TEXTO
-                    if msg.media:
-                        await user_client.send_file(BOT_USERNAME, msg.media, caption=header + (msg.text or ""))
-                        print(f"   ✅ PARTE {idx} enviada (con Foto/PDF)")
-                    else:
-                        await user_client.send_message(BOT_USERNAME, header + msg.text)
-                        print(f"   ✅ PARTE {idx} enviada (solo texto)")
-                    
-                    await asyncio.sleep(0.5) # Pequeña pausa para que Telegram no bloquee el envío masivo
-                    
-                except Exception as e:
-                    print(f"   ❌ Error enviando parte {idx}: {e}")
-                    continue
+            # 🔑 SI ES /nm → ENVIAR TODO EN UN TXT
+            if es_comando_nm and total > 1:
+                print(f"   📄 Comando /nm detectado. Creando archivo TXT con {total} mensajes...")
+                
+                # Combinar todo el contenido
+                contenido_completo = ""
+                for idx, msg in enumerate(mensajes_finales, 1):
+                    if msg.text:
+                        contenido_completo += f"\n{'='*60}\n"
+                        contenido_completo += f" RESULTADO {idx} DE {total}\n"
+                        contenido_completo += f"{'='*60}\n\n"
+                        contenido_completo += msg.text
+                        contenido_completo += f"\n\n"
+                
+                # Crear archivo TXT
+                nombre_archivo = f"RESULTADO_NM_{chat_destino}.txt"
+                
+                # Enviar como archivo
+                await user_client.send_file(
+                    BOT_USERNAME,
+                    contenido_completo.encode('utf-8'),
+                    caption=f"📄 **RESULTADO PARA: {chat_destino}**\n\n📦 {total} resultados encontrados\n📋 Archivo TXT adjunto",
+                    filename=nombre_archivo
+                )
+                
+                print(f"   ✅ Archivo TXT enviado con {total} resultados")
+            
+            # 🔑 SI NO ES /nm O SOLO HAY 1 MENSAJE → ENVIAR NORMAL
+            else:
+                print(f"   📤 Enviando {total} mensaje(s) normalmente...")
+                
+                for idx, msg in enumerate(mensajes_finales, 1):
+                    try:
+                        header = f"RESULTADO PARA: {chat_destino}\n\n"
+                        
+                        if total > 1:
+                            header += f"**📦 PARTE {idx} DE {total}**\n\n"
+                        
+                        if msg.media:
+                            await user_client.send_file(BOT_USERNAME, msg.media, caption=header + (msg.text or ""))
+                            print(f"   ✅ PARTE {idx} enviada (con media)")
+                        else:
+                            await user_client.send_message(BOT_USERNAME, header + msg.text)
+                            print(f"   ✅ PARTE {idx} enviada (texto)")
+                        
+                        await asyncio.sleep(0.5)
+                        
+                    except Exception as e:
+                        print(f"   ❌ Error enviando parte {idx}: {e}")
+                        continue
 
-            print(f"   🎉 PROCESO COMPLETADO: {total} mensaje(s) entregados.")
+            print(f"   🎉 PROCESO COMPLETADO")
         
         print(f"{'='*50}\n")
         
     except Exception as e:
-        print(f"❌ [USER] ERROR GENERAL EN SECCIÓN 8: {e}")
+        print(f"❌ [USER] ERROR GENERAL: {e}")
         import traceback
         traceback.print_exc()
+
 
 # ==============================================================================
 # SECCIÓN 9: FUNCIÓN MAIN
