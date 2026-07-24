@@ -4,6 +4,7 @@ from telethon.tl.custom import Button
 import requests
 import time
 from datetime import datetime
+import uuid
 
 # ==============================================================================
 # SECCIÓN 1: CONFIGURACIÓN
@@ -31,7 +32,7 @@ bot_client = TelegramClient('bot_session', API_ID, API_HASH)
 # ==============================================================================
 bot_id = None
 main_account_id = None
-processing_messages = {}
+processing_messages = {}  # {chat_id: {'request_id': 'xxx', 'termino': 'yyy', 'msg_id': 'zzz'}}
 pending_media = {}
 resultados_enviados = {}
 
@@ -85,12 +86,12 @@ def verificar_acceso(user_id):
         return False
 
 # ==============================================================================
-# SECCIÓN 4: LISTA DE COMANDOS (TEXTO SIMPLE)
+# SECCIÓN 4: LISTA DE COMANDOS
 # ==============================================================================
 def generar_lista_comandos():
-    """Genera la lista completa de comandos en texto simple con EJEMPLOS de uso"""
+    """Genera la lista completa de comandos"""
     
-    comandos = """ **RENIEC:**
+    comandos = """📄 **RENIEC:**
 /dni 44441111 - Foto y datos de una persona
 /nm JUAN CARLOS RAMIREZ ESPINOZA - Búsqueda por nombres
 
@@ -118,13 +119,13 @@ def generar_lista_comandos():
 👤 **FACIAL:**
 /facial [foto] - Reconocimiento facial masivo
 
- **PERSONAS:**
+👤 **PERSONAS:**
 /seekerdni 44445555 - Seeker completo por DNI
 /metadni 44445555 - Seeker completo PDF
 /seeker 45454545 - Seeker completo v2.0
 /co 44445555 - Correos de una persona
 
- **VEHICULOS:**
+🚗 **VEHICULOS:**
 /insve ABC123 - Inscripción vehicular PDF
 /pla ABC123 - Datos de vehículo
 /placapdf ABC123 - Sunarp asientos PDF
@@ -165,13 +166,13 @@ def generar_lista_comandos():
 💵 **SUNAT:**
 /ruc 20165465009 - RUC info completo
 
-👨‍‍👧 **FAMILIA:**
+👨‍👩‍👧 **FAMILIA:**
 /ag 44441111 - Árbol genealógico texto
 /ag2 44441111 - Árbol genealógico texto v2
 /agv 44441111 - Árbol genealógico visual PNG
 /famivi 44441111 - Árbol familiar visual
 
- **MINEDU:**
+🎓 **MINEDU:**
 /minedu 44445555 - Notas Minedu PDF
 
 🚦 **MTC:**
@@ -214,30 +215,27 @@ def generar_lista_comandos():
     return comandos
 
 # ==============================================================================
-# SECCIÓN 5: HANDLERS DE COMANDOS (SIN IMAGEN - SIN ERRORES)
+# SECCIÓN 5: HANDLERS DE COMANDOS
 # ==============================================================================
 @bot_client.on(events.NewMessage(incoming=True, pattern=r'(?i)^/cmds|^/menu|^/help|^/comandos'))
 async def cmds_handler(event):
-    """Handler para el comando /cmds - Muestra lista de comandos (SIN IMAGEN)"""
+    """Handler para el comando /cmds"""
     try:
         sender_id = event.sender_id
         
-        # 🛡️ VERIFICAR ACCESO PRIMERO
         tiene_acceso = verificar_acceso(sender_id)
         
         if not tiene_acceso:
-            print(f"⚠️ ACCESO DENEGADO: User ID {sender_id} intentó usar menú")
+            print(f"⚠️ ACCESO DENEGADO: User ID {sender_id}")
             await event.reply(
                 f"⚠️ <b>No tienes acceso activo.</b>\n\n"
-                f"Por favor, envía tu ID al administrador para activar tu membresía.\n\n"
                 f"🆔 <b>Tu ID:</b> <code>{sender_id}</code>",
                 parse_mode='html'
             )
             raise events.StopPropagation
         
-        print("   → Ejecutando comando /cmds - Mostrando lista de comandos")
+        print("   → Ejecutando /cmds")
         
-        # Obtener lista de comandos
         lista_comandos = generar_lista_comandos()
         
         mensaje = (
@@ -246,18 +244,17 @@ async def cmds_handler(event):
             f"{lista_comandos}"
         )
         
-        # ✅ ENVIAR SOLO TEXTO (Sin imagen que cause errores)
         await event.reply(mensaje, parse_mode='md')
         
         raise events.StopPropagation
         
     except Exception as e:
-        print(f"❌ Error al mostrar comandos: {e}")
+        print(f"❌ Error: {e}")
         import traceback
         traceback.print_exc()
 
 # ==============================================================================
-# SECCIÓN 6: HANDLER DEL BOT - PROCESAMIENTO DE MENSAJES
+# SECCIÓN 6: HANDLER DEL BOT - PROCESAMIENTO
 # ==============================================================================
 @bot_client.on(events.NewMessage(incoming=True))
 async def bot_message_handler(event):
@@ -269,15 +266,13 @@ async def bot_message_handler(event):
         chat_id = event.chat_id
         sender_id = event.sender_id
         
-        # 🛡️ Si es un comando de menú, ignorar
-        if texto_lower.startswith('/cmds') or texto_lower.startswith('/menu') or texto_lower.startswith('/help') or texto_lower.startswith('/comandos'):
+        if texto_lower.startswith('/cmds') or texto_lower.startswith('/menu') or texto_lower.startswith('/help'):
             return
         
         print(f"\n{'='*50}")
         print(f"📩 [BOT] Mensaje recibido")
         print(f"   Chat ID: {chat_id}")
         print(f"   Sender ID: {sender_id}")
-        print(f"   Texto: {texto[:80]}...")
         
         # ==============================================================================
         # PROCESAMIENTO DE CUENTA PRINCIPAL
@@ -285,7 +280,6 @@ async def bot_message_handler(event):
         if sender_id == main_account_id:
             print("   → Es de la CUENTA PRINCIPAL")
             
-            # CASO 1: Mensaje de texto con "RESULTADO PARA:"
             if "RESULTADO PARA:" in texto and not event.media:
                 print("   → Mensaje de texto de resultado")
                 lineas = texto.split("\n\n")
@@ -294,10 +288,7 @@ async def bot_message_handler(event):
                         chat_destino = int(lineas[0].replace("RESULTADO PARA:", "").strip())
                         respuesta_texto = "\n\n".join(lineas[1:])
                         
-                        print(f"   → Chat destino: {chat_destino}")
-                        
                         if len(respuesta_texto) > 4000:
-                            print(f"   → Texto largo, dividiendo en partes...")
                             partes = [respuesta_texto[i:i+4000] for i in range(0, len(respuesta_texto), 4000)]
                             for idx, parte in enumerate(partes):
                                 await bot_client.send_message(chat_destino, parte)
@@ -305,73 +296,49 @@ async def bot_message_handler(event):
                         else:
                             await bot_client.send_message(chat_destino, respuesta_texto)
                         
-                        if chat_destino not in resultados_enviados:
-                            resultados_enviados[chat_destino] = {
-                                'texto': True,
-                                'media': False,
-                                'time': asyncio.get_event_loop().time()
-                            }
-                        else:
-                            resultados_enviados[chat_destino]['texto'] = True
-                        
                         if chat_destino in processing_messages:
-                            msg_id = processing_messages[chat_destino]
-                            try:
-                                await bot_client.edit_message(
-                                    chat_destino, 
-                                    msg_id, 
-                                    "✅ RESULTADO ENVIADO CORRECTAMENTE"
-                                )
-                            except Exception as e:
-                                print(f"   ⚠️ Error al editar mensaje: {e}")
+                            msg_id = processing_messages[chat_destino].get('msg_id')
+                            if msg_id:
+                                try:
+                                    await bot_client.edit_message(
+                                        chat_destino, msg_id, 
+                                        "✅ RESULTADO ENVIADO CORRECTAMENTE"
+                                    )
+                                except Exception as e:
+                                    print(f"   ⚠️ Error al editar: {e}")
                         
                         await asyncio.sleep(10)
                         if chat_destino in processing_messages:
                             del processing_messages[chat_destino]
                         
                     except Exception as e:
-                        print(f"   ❌ Error al procesar resultado: {e}")
+                        print(f"   ❌ Error: {e}")
                         import traceback
                         traceback.print_exc()
                 return
             
-            # CASO 2: Mensaje con IMAGEN/PDF
             elif event.media:
-                print("   → Media recibido de cuenta principal")
+                print("   → Media recibido")
                 
                 chats_pendientes = list(processing_messages.keys())
                 
                 if not chats_pendientes:
-                    print("   ⚠️ No hay chats pendientes para recibir media")
                     return
                 
                 for chat_id_pendiente in chats_pendientes:
-                    print(f"   → Reenviando media a {chat_id_pendiente}")
                     try:
                         await bot_client.send_file(chat_id_pendiente, event.media, caption=texto)
                         
-                        if chat_id_pendiente not in resultados_enviados:
-                            resultados_enviados[chat_id_pendiente] = {
-                                'texto': True,
-                                'media': True,
-                                'time': asyncio.get_event_loop().time()
-                            }
-                        else:
-                            resultados_enviados[chat_id_pendiente]['media'] = True
-                        
                         if chat_id_pendiente in processing_messages:
-                            msg_id = processing_messages[chat_id_pendiente]
-                            try:
+                            msg_id = processing_messages[chat_id_pendiente].get('msg_id')
+                            if msg_id:
                                 await bot_client.edit_message(
-                                    chat_id_pendiente, 
-                                    msg_id, 
+                                    chat_id_pendiente, msg_id,
                                     "✅ RESULTADO ENVIADO CORRECTAMENTE"
                                 )
-                            except Exception as e:
-                                print(f"   ⚠️ Error al editar mensaje: {e}")
                         
                     except Exception as e:
-                        print(f"   ⚠️ Error al reenviar media: {e}")
+                        print(f"   ⚠️ Error: {e}")
                 
                 await asyncio.sleep(10)
                 for chat_id_pendiente in chats_pendientes:
@@ -385,45 +352,48 @@ async def bot_message_handler(event):
         # ==============================================================================
         print("   → Es de CUENTA SECUNDARIA")
         
-        # 🛡️ VERIFICAR ACCESO EN CLOUDFLARE KV
         tiene_acceso = verificar_acceso(sender_id)
         
         if not tiene_acceso:
-            print(f"⚠️ ACCESO DENEGADO: User ID {sender_id} no tiene acceso en KV")
             await event.reply(
                 f"⚠️ <b>No tienes acceso activo.</b>\n\n"
-                f"Por favor, envía tu ID al administrador para activar tu membresía.\n\n"
                 f"🆔 <b>Tu ID:</b> <code>{sender_id}</code>",
                 parse_mode='html'
             )
             return
         
-        print(f"✅ Usuario {sender_id} tiene acceso verificado")
-        
         if chat_id in processing_messages:
-            print(f"   ️ Ya hay un procesamiento en curso para {chat_id}, ignorando")
+            print(f"   ⚠️ Ya hay procesamiento en curso")
             return
         
-        processing_msg = await event.reply("⏳ Procesando...")
-        processing_messages[chat_id] = processing_msg.id
-        print(f"   → Guardado chat {chat_id} con msg_id {processing_msg.id}")
+        processing_msg = await event.reply(" Procesando...")
+        
+        # 🔑 GENERAR ID ÚNICO PARA ESTA CONSULTA
+        request_id = str(uuid.uuid4())[:8]  # ID único de 8 caracteres
+        
+        processing_messages[chat_id] = {
+            'msg_id': processing_msg.id,
+            'request_id': request_id,
+            'timestamp': time.time()
+        }
+        
+        print(f"   → ID de solicitud: {request_id}")
 
         if event.media:
-            print(f"   → Media detectado, enviando texto + media a cuenta principal")
-            caption_principal = f"PROCESAR PARA: {chat_id}\n\n{texto}"
+            caption_principal = f"PROCESAR PARA: {chat_id}\nREQUEST_ID: {request_id}\n\n{texto}"
             await bot_client.send_file(MAIN_ACCOUNT, event.media, caption=caption_principal)
         else:
-            await bot_client.send_message(MAIN_ACCOUNT, f"PROCESAR PARA: {chat_id}\n\n{texto}")
+            await bot_client.send_message(MAIN_ACCOUNT, f"PROCESAR PARA: {chat_id}\nREQUEST_ID: {request_id}\n\n{texto}")
         print(f"   ✅ Enviado a cuenta principal")
         
     except Exception as e:
-        print(f"❌ [BOT] ERROR GENERAL: {e}")
+        print(f"❌ [BOT] ERROR: {e}")
         import traceback
         traceback.print_exc()
 
 
 # ==============================================================================
-# SECCIÓN 7: HANDLER DE CUENTA PRINCIPAL (BLINDADO CONTRA MEZCLAS)
+# SECCIÓN 7: HANDLER DE CUENTA PRINCIPAL (CON ID ÚNICO POR CONSULTA)
 # ==============================================================================
 @user_client.on(events.NewMessage(incoming=True))
 async def user_receive_handler(event):
@@ -453,10 +423,22 @@ async def user_receive_handler(event):
             return
         
         texto_original = lineas[1].strip()
-        print(f"   ✅ Comando a enviar a Provenet: {texto_original}")
         
-        # 🔑 DETECTAR SI ES COMANDO /nm (BÚSQUEDA POR NOMBRES)
-        es_comando_nm = texto_original.lower().startswith('/nm') or texto_original.lower().startswith('nm ')
+        # 🔑 EXTRAER REQUEST_ID SI EXISTE
+        request_id_enviado = None
+        if "REQUEST_ID:" in texto:
+            request_id_enviado = texto.split("REQUEST_ID:")[1].split("\n")[0].strip()
+            print(f"   ✅ Request ID recibido: {request_id_enviado}")
+        
+        # 🔑 EXTRAER TÉRMINO DE BÚSQUEDA
+        partes_comando = texto_original.split(' ', 1)
+        comando = partes_comando[0].lower() if len(partes_comando) > 0 else ""
+        termino_busqueda = partes_comando[1].strip() if len(partes_comando) > 1 else ""
+        
+        print(f"   🔍 Comando: {comando}")
+        print(f"   🔍 Término: '{termino_busqueda}'")
+        
+        es_comando_nm = comando.startswith('/nm') or comando.startswith('nm')
         
         print(f"   → Enviando a Provenet...")
         try:
@@ -465,43 +447,39 @@ async def user_receive_handler(event):
             else:
                 msg_enviado = await user_client.send_message(CODE_BOT, texto_original)
             
-            # 🔑 CORRECCIÓN CRÍTICA: Guardamos el ID exacto del mensaje enviado
             msg_enviado_id = msg_enviado.id
             msg_enviado_time = msg_enviado.date
-            print(f"   ✅ Enviado a Provenet (Msg ID: {msg_enviado_id})")
+            print(f"   ✅ Enviado (Msg ID: {msg_enviado_id})")
             
         except Exception as e:
-            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n❌ Error al enviar: {e}")
+            await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n❌ Error: {e}")
             return
         
-        print("   ⏳ Esperando respuesta (máx 35s, revisa cada 3s)...")
+        print(f"   ⏳ Esperando respuesta que contenga: '{termino_busqueda}'...")
         
         mensajes_finales = []
         ids_ya_procesados = set()
-        palabras_basura = ['espera', 'consultando', 'cargando', 'procesando', 'generando', 'por favor', 'un momento']
+        palabras_basura = ['espera', 'consultando', 'cargando', 'procesando', 'generando']
+        respuesta_completa = False
         
-        tiempo_maximo = 35
+        tiempo_maximo = 45
         tiempo_esperado = 0
-        tiempo_sin_nuevos = 0
         
-        # BUCLE DE ESPERA INTELIGENTE Y BLINDADO
-        while tiempo_esperado < tiempo_maximo:
+        while tiempo_esperado < tiempo_maximo and not respuesta_completa:
             await asyncio.sleep(3)
             tiempo_esperado += 3
             
             try:
-                mensajes = await user_client.get_messages(CODE_BOT, limit=20)
-                hay_nuevos = False
+                mensajes = await user_client.get_messages(CODE_BOT, limit=50)
                 
                 for msg in mensajes:
                     if msg.id in ids_ya_procesados:
                         continue
                     
-                    # 🔑 FILTRO 1: Debe ser posterior a nuestro envío
                     if msg.date <= msg_enviado_time:
                         continue
                     
-                    # 🔑 FILTRO 2: Debe ser respuesta directa a nuestro mensaje
+                    # Verificar si es respuesta a nuestro mensaje
                     es_nuestra_respuesta = False
                     if hasattr(msg, 'reply_to_msg_id') and msg.reply_to_msg_id == msg_enviado_id:
                         es_nuestra_respuesta = True
@@ -511,11 +489,21 @@ async def user_receive_handler(event):
                     if not es_nuestra_respuesta:
                         continue
 
-                    # Filtros para ignorar basura
                     msg_text = msg.text or msg.raw_text or ""
+                    
+                    # 🔑 DETECTAR MENSAJE DE ÉXITO
+                    if "consulta se hizo de manera exitosa" in msg_text.lower() or "consulta exitosa" in msg_text.lower():
+                        print(f"   ✅ Detectado mensaje de éxito")
+                        mensajes_finales.append(msg)
+                        ids_ya_procesados.add(msg.id)
+                        respuesta_completa = True
+                        break
+                    
+                    # Ignorar mensajes de espera
                     if msg_text and any(x in msg_text.lower() for x in palabras_basura):
                         continue
                     
+                    # Ignorar eco del comando
                     comando_limpio = texto_original.strip().lower()
                     mensaje_limpio = msg_text.strip().lower()
                     if mensaje_limpio == comando_limpio:
@@ -523,42 +511,46 @@ async def user_receive_handler(event):
                     if len(mensaje_limpio) < len(comando_limpio) + 10 and comando_limpio in mensaje_limpio:
                         continue
                     
-                    # ✅ ES UN MENSAJE VÁLIDO
+                    # 🔑 VERIFICACIÓN 100%: El mensaje DEBE contener el término COMPLETO
+                    mensaje_en_mayusculas = msg_text.upper()
+                    termino_en_mayusculas = termino_busqueda.upper()
+                    
+                    if termino_en_mayusculas not in mensaje_en_mayusculas:
+                        print(f"   ⚠️ NO contiene '{termino_busqueda}' - Ignorando")
+                        continue
+                    
+                    # ✅ CAPTURAR MENSAJE
                     mensajes_finales.append(msg)
                     ids_ya_procesados.add(msg.id)
-                    hay_nuevos = True
-                    print(f"   📥 Capturado mensaje {len(mensajes_finales)}")
+                    print(f"   ✅ CAPTADO - Contiene '{termino_busqueda}'")
+                    print(f"   📥 Total: {len(mensajes_finales)}")
                 
-                if hay_nuevos:
-                    print(f"   ✅ Total capturados: {len(mensajes_finales)}")
-                    tiempo_sin_nuevos = 0
-                else:
-                    tiempo_sin_nuevos += 3
-                
-                if len(mensajes_finales) > 0 and tiempo_sin_nuevos >= 6:
-                    print(f"   ✅ No llegan más mensajes. Total: {len(mensajes_finales)}")
+                if respuesta_completa:
                     break
                     
             except Exception as e:
-                print(f"   ️ Error: {e}")
+                print(f"   ⚠️ Error: {e}")
                 continue
 
-        # ENVÍO SEGÚN EL TIPO DE COMANDO
+        # ENVÍO DE RESULTADOS
         if not mensajes_finales:
-            print("   ⚠️ No se recibió respuesta")
+            print("   ⚠️ Sin respuesta")
             await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n⚠️ ERROR: Sin respuesta")
         else:
             total = len(mensajes_finales)
+            total_resultados = total - 1
+            print(f"   📊 Total: {total_resultados} resultados")
             
-            # 🔑 SI ES /nm → ENVIAR TODO EN UN TXT
-            if es_comando_nm and total > 1:
-                print(f"   📄 Comando /nm detectado. Creando archivo TXT...")
+            if es_comando_nm and total_resultados > 1:
+                print(f"   📄 Creando TXT...")
                 
                 contenido_completo = ""
+                contador = 0
                 for idx, msg in enumerate(mensajes_finales, 1):
-                    if msg.text:
+                    if msg.text and "consulta se hizo de manera exitosa" not in msg.text.lower():
+                        contador += 1
                         contenido_completo += f"\n{'='*60}\n"
-                        contenido_completo += f" RESULTADO {idx} DE {total}\n"
+                        contenido_completo += f" RESULTADO {contador} DE {total_resultados}\n"
                         contenido_completo += f"{'='*60}\n\n"
                         contenido_completo += msg.text
                         contenido_completo += f"\n\n"
@@ -568,32 +560,36 @@ async def user_receive_handler(event):
                 await user_client.send_file(
                     BOT_USERNAME,
                     contenido_completo.encode('utf-8'),
-                    caption=f" **RESULTADO PARA: {chat_destino}**\n\n📦 {total} resultados\n📋 Archivo TXT",
+                    caption=f" **RESULTADO PARA: {chat_destino}**\n\n📦 {total_resultados} resultados",
                     filename=nombre_archivo
                 )
                 
-                print(f"   ✅ Archivo TXT enviado")
+                print(f"   ✅ TXT enviado")
             
-            # 🔑 SI NO ES /nm → ENVIAR NORMAL
             else:
-                print(f"   📤 Enviando {total} mensaje(s)...")
+                print(f"   📤 Enviando {total_resultados} mensaje(s)...")
                 
                 for idx, msg in enumerate(mensajes_finales, 1):
                     try:
+                        msg_text = msg.text or ""
+                        
+                        if "consulta se hizo de manera exitosa" in msg_text.lower():
+                            continue
+                        
                         header = f"RESULTADO PARA: {chat_destino}\n\n"
                         
-                        if total > 1:
-                            header += f"**📦 PARTE {idx} DE {total}**\n\n"
+                        if total_resultados > 1:
+                            header += f"**📦 PARTE {idx} DE {total_resultados}**\n\n"
                         
                         if msg.media:
-                            await user_client.send_file(BOT_USERNAME, msg.media, caption=header + (msg.text or ""))
+                            await user_client.send_file(BOT_USERNAME, msg.media, caption=header + msg_text)
                         else:
-                            await user_client.send_message(BOT_USERNAME, header + msg.text)
+                            await user_client.send_message(BOT_USERNAME, header + msg_text)
                         
                         await asyncio.sleep(0.5)
                         
                     except Exception as e:
-                        print(f"   ❌ Error enviando parte {idx}: {e}")
+                        print(f"   ❌ Error: {e}")
                         continue
 
             print(f"   🎉 PROCESO COMPLETADO")
@@ -601,7 +597,7 @@ async def user_receive_handler(event):
         print(f"{'='*50}\n")
         
     except Exception as e:
-        print(f" [USER] ERROR GENERAL: {e}")
+        print(f"❌ [USER] ERROR: {e}")
         import traceback
         traceback.print_exc()
 
@@ -629,7 +625,7 @@ async def main():
     print(f"✅ Bot: @{bot_me.username} (ID: {bot_id})")
 
     print("\n" + "="*60)
-    print("✨ AXEL BOT INICIADO - Esperando mensajes...")
+    print("✨ AXEL BOT INICIADO")
     print("="*60 + "\n")
 
     await asyncio.gather(
