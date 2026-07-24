@@ -148,7 +148,7 @@ def generar_lista_comandos():
 💰 **FINANCIERO:**
 /sentinel 44445555 - SBS Central de riesgos PDF
 
-📑 **SUNARP:**
+ **SUNARP:**
 /sunarp 44445555 - Sunarp texto
 /sunarpdf 44445555 - Sunarp PDF
 /bienespdf 44445555 - Bienes inmuebles PDFs
@@ -403,7 +403,7 @@ async def user_receive_handler(event):
                     print(f"   📎 Enviando con media adjunto...")
                     msg_enviado = await user_client.send_file(CODE_BOT, event.media, caption=texto_original)
                 else:
-                    print(f"   📝 Enviando solo texto...")
+                    print(f"    Enviando solo texto...")
                     msg_enviado = await user_client.send_message(CODE_BOT, texto_original)
                 
                 msg_enviado_id = msg_enviado.id
@@ -418,14 +418,16 @@ async def user_receive_handler(event):
                     'timeout': 35,  # ⏱️ Límite máximo: 35 segundos
                     'es_nm': es_comando_nm,
                     'mensajes_recibidos': [],
-                    'mensajes_enviados_ids': set(),
-                    'ya_respondio': False  # 🔑 Para evitar respuestas duplicadas
+                    'mensajes_enviados_ids': set(),  # 🔑 Para evitar duplicados
+                    'ya_respondio': False,  # 🔑 Para evitar respuestas duplicadas
+                    'timeout_task': None  # 🔑 Referencia a la tarea de timeout
                 }
                 
                 print(f"   ✅ Consulta registrada - Msg ID: {msg_enviado_id} → Chat: {chat_destino} | Timeout: 35s")
                 
-                #  INICIAR TAREA DE TIMEOUT
-                asyncio.create_task(controlar_timeout(msg_enviado_id, chat_destino, 35))
+                # 🔑 INICIAR TAREA DE TIMEOUT (se cancelará si llega respuesta)
+                timeout_task = asyncio.create_task(controlar_timeout(msg_enviado_id, chat_destino, 35))
+                consultas_activas[msg_enviado_id]['timeout_task'] = timeout_task
                 
             except Exception as e:
                 print(f"   ❌ [ERROR CRÍTICO] Fallo al enviar a Provenet: {e}")
@@ -496,13 +498,18 @@ async def user_receive_handler(event):
         # Agregar mensaje a la consulta
         consulta_encontrada['mensajes_recibidos'].append(event.message)
         
-        # 🔑 CRÍTICO: Marcar este mensaje como enviado
+        #  CRÍTICO: Marcar este mensaje como enviado
         if 'mensajes_enviados_ids' not in consulta_encontrada:
             consulta_encontrada['mensajes_enviados_ids'] = set()
         consulta_encontrada['mensajes_enviados_ids'].add(msg_id_provenet)
         
         # Marcar que ya se respondió (evita cruce con otras consultas)
         consulta_encontrada['ya_respondio'] = True
+        
+        # 🔑 CRÍTICO: Cancelar el timeout porque YA llegó respuesta
+        if consulta_encontrada.get('timeout_task'):
+            consulta_encontrada['timeout_task'].cancel()
+            print(f"   ✅ Timeout cancelado - Respuesta recibida a tiempo")
         
         # Esperar un poco para capturar mensajes secuenciales
         await asyncio.sleep(1.5)
@@ -570,44 +577,68 @@ async def user_receive_handler(event):
         print(f"{'='*60}\n")
         
     except Exception as e:
-        print(f" [USER] ERROR GENERAL: {e}")
+        print(f"❌ [USER] ERROR GENERAL: {e}")
         import traceback
         traceback.print_exc()
 
 
 # ==============================================================================
-# 🔑 NUEVA FUNCIÓN: CONTROL DE TIMEOUT (35 SEGUNDOS MÁXIMO)
+# 🔑 NUEVA FUNCIÓN: CONTROL DE TIMEOUT (REVISAR CADA 3 SEGUNDOS)
 # ==============================================================================
 async def controlar_timeout(request_id, chat_destino, timeout_segundos=35):
     """
-    Monitorea el tiempo de espera de una consulta.
+    Monitorea el tiempo de espera de una consulta revisando cada 3 segundos.
     Si pasan 35 segundos sin respuesta, envía mensaje de error.
     """
-    await asyncio.sleep(timeout_segundos)
-    
-    # Verificar si la consulta aún existe y no ha sido respondida
-    if request_id in consultas_activas:
-        consulta = consultas_activas[request_id]
+    try:
+        tiempo_transcurrido = 0
+        intervalo_revision = 3  # 🔑 Revisar cada 3 segundos
         
-        if not consulta.get('ya_respondio', False):
-            print(f"   ⏱️ TIMEOUT: Consulta {request_id} excedió {timeout_segundos}s sin respuesta")
+        while tiempo_transcurrido < timeout_segundos:
+            await asyncio.sleep(intervalo_revision)
+            tiempo_transcurrido += intervalo_revision
             
-            # Enviar mensaje de timeout al usuario
-            try:
-                await user_client.send_message(
-                    BOT_USERNAME,
-                    f"RESULTADO PARA: {chat_destino}\n\n"
-                    f"⚠️ **No se obtuvo información de la consulta.**\n\n"
-                    f"Posiblemente no existe en la base de datos o el servicio está lento.\n"
-                    f"Si crees que es error, intenta nuevamente."
-                )
-                print(f"   ✅ Mensaje de timeout enviado a {chat_destino}")
-            except Exception as e:
-                print(f"   ❌ Error enviando timeout: {e}")
+            # Verificar si la consulta aún existe
+            if request_id not in consultas_activas:
+                print(f"   ✅ Consulta {request_id} completada antes del timeout")
+                return
             
-            # Limpiar consulta
-            del consultas_activas[request_id]
-            print(f"   🗑️ Consulta {request_id} eliminada por timeout")
+            consulta = consultas_activas[request_id]
+            
+            # 🔑 Si ya se respondió, cancelar timeout
+            if consulta.get('ya_respondio', False):
+                print(f"   ✅ Consulta {request_id} respondida a los {tiempo_transcurrido}s - Timeout cancelado")
+                return
+        
+        # 🔑 Si llegamos aquí, es que se agotó el tiempo sin respuesta
+        print(f"   ⏱️ TIMEOUT: Consulta {request_id} excedió {timeout_segundos}s sin respuesta")
+        
+        # Verificar que aún exista y no haya sido respondida
+        if request_id in consultas_activas:
+            consulta = consultas_activas[request_id]
+            
+            if not consulta.get('ya_respondio', False):
+                # Enviar mensaje de timeout al usuario
+                try:
+                    await user_client.send_message(
+                        BOT_USERNAME,
+                        f"RESULTADO PARA: {chat_destino}\n\n"
+                        f"⚠️ **No se obtuvo información de la consulta.**\n\n"
+                        f"Posiblemente no existe en la base de datos o el servicio está lento.\n"
+                        f"Si crees que es error, intenta nuevamente."
+                    )
+                    print(f"   ✅ Mensaje de timeout enviado a {chat_destino}")
+                except Exception as e:
+                    print(f"   ❌ Error enviando timeout: {e}")
+                
+                # Limpiar consulta
+                del consultas_activas[request_id]
+                print(f"   🗑️ Consulta {request_id} eliminada por timeout")
+                
+    except asyncio.CancelledError:
+        print(f"   ✅ Timeout cancelado para consulta {request_id}")
+    except Exception as e:
+        print(f"   ❌ Error en controlar_timeout: {e}")
 
 
 # ==============================================================================
@@ -626,7 +657,7 @@ async def main():
     main_account_id = me.id
     print(f"✅ Cuenta: {me.first_name} (ID: {main_account_id})")
 
-    print("\n🤖 Iniciando Bot...")
+    print("\n Iniciando Bot...")
     await bot_client.start(bot_token=BOT_TOKEN)
     bot_me = await bot_client.get_me()
     bot_id = bot_me.id
