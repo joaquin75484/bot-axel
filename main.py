@@ -850,8 +850,9 @@ async def bot_message_handler(event):
         import traceback
         traceback.print_exc()
 
+
 # ==============================================================================
-# SECCIÓN 8: HANDLER DE CUENTA PRINCIPAL (FINAL - CAPTURA TODO: TEXTO, FOTO, PDF, CUALQUIER CANTIDAD)
+# SECCIÓN 8: HANDLER DE CUENTA PRINCIPAL (DEFINITIVO - CAPTURA TODO: TEXTO, FOTO, PDF, CUALQUIER CANTIDAD)
 # ==============================================================================
 @user_client.on(events.NewMessage(incoming=True))
 async def user_receive_handler(event):
@@ -906,14 +907,16 @@ async def user_receive_handler(event):
         
         tiempo_maximo = 35
         tiempo_esperado = 0
+        tiempo_sin_nuevos = 0  # 🔑 CLAVE: Contador de segundos sin recibir nada nuevo
         
-        # 1. BUCLE DE ESPERA Y CAPTURA
+        # 1. BUCLE DE ESPERA INTELIGENTE (CON CONTADOR DE SILENCIO)
         while tiempo_esperado < tiempo_maximo:
             await asyncio.sleep(3)
             tiempo_esperado += 3
             
             try:
                 mensajes = await user_client.get_messages(CODE_BOT, limit=100)
+                hay_nuevos = False
                 
                 for msg in mensajes:
                     if msg.id in ids_ya_procesados:
@@ -922,7 +925,7 @@ async def user_receive_handler(event):
                     msg_text = msg.text or msg.raw_text or ""
                     msg_date = msg.date
                     
-                    # Filtros estrictos para ignorar basura
+                    # Filtros para ignorar basura
                     if msg_date <= msg_enviado_time: continue
                     if msg.id == msg_enviado_id: continue
                     if msg_text and any(x in msg_text.lower() for x in palabras_basura): continue
@@ -935,34 +938,20 @@ async def user_receive_handler(event):
                     # ✅ ES UN MENSAJE VÁLIDO (Texto, Foto o PDF)
                     mensajes_finales.append(msg)
                     ids_ya_procesados.add(msg.id)
+                    hay_nuevos = True
+                    print(f"   📥 Capturado: '{msg_text[:40]}...'")
                 
-                # 🔑 REGLA DE ORO: Si ya llegó al menos 1 mensaje, esperamos solo 2 segundos extra
-                # para atrapar el resto si Provenet los mandó con diferencia de milisegundos.
-                if len(mensajes_finales) > 0:
-                    print(f"   ✅ ¡Respuesta detectada a los {tiempo_esperado}s! Esperando 2s extra por si hay más...")
-                    await asyncio.sleep(2)
-                    tiempo_esperado += 2
-                    
-                    # Revisión final rápida para no perder nada
-                    mensajes_extra = await user_client.get_messages(CODE_BOT, limit=100)
-                    for msg in mensajes_extra:
-                        if msg.id not in ids_ya_procesados:
-                            msg_text = msg.text or msg.raw_text or ""
-                            msg_date = msg.date
-                            
-                            if msg_date <= msg_enviado_time: continue
-                            if msg.id == msg_enviado_id: continue
-                            if msg_text and any(x in msg_text.lower() for x in palabras_basura): continue
-                            
-                            comando_limpio = texto_original.strip().lower()
-                            mensaje_limpio = msg_text.strip().lower()
-                            if mensaje_limpio == comando_limpio: continue
-                            if len(mensaje_limpio) < len(comando_limpio) + 10 and comando_limpio in mensaje_limpio: continue
-                            
-                            mensajes_finales.append(msg)
-                            ids_ya_procesados.add(msg.id)
-                    
-                    break # Salimos del bucle, ya tenemos todo el paquete
+                if hay_nuevos:
+                    print(f"   ✅ Total capturados hasta ahora: {len(mensajes_finales)}")
+                    tiempo_sin_nuevos = 0  # 🔑 RESETEA EL RELOJ PORQUE LLEGÓ ALGO
+                else:
+                    tiempo_sin_nuevos += 3
+                    print(f"   ⏱️ Sin mensajes nuevos por {tiempo_sin_nuevos}s")
+                
+                # 🔑 REGLA DE ORO: Si ya tenemos mensajes y pasan 6 segundos seguidos sin llegar nada nuevo, terminamos.
+                if len(mensajes_finales) > 0 and tiempo_sin_nuevos >= 6:
+                    print(f"   ✅ No llegan más mensajes. Total final: {len(mensajes_finales)}")
+                    break
                     
             except Exception as e:
                 print(f"   ⚠️ Error verificando: {e}")
@@ -996,7 +985,7 @@ async def user_receive_handler(event):
                     
                 except Exception as e:
                     print(f"   ❌ Error enviando parte {idx}: {e}")
-                    # El 'continue' implícito del try/except asegura que si falla el 2, intente el 3.
+                    continue
 
             print(f"   🎉 PROCESO COMPLETADO: {total} mensaje(s) entregados.")
         
@@ -1006,6 +995,7 @@ async def user_receive_handler(event):
         print(f"❌ [USER] ERROR GENERAL EN SECCIÓN 8: {e}")
         import traceback
         traceback.print_exc()
+
 # ==============================================================================
 # SECCIÓN 9: FUNCIÓN MAIN
 # ==============================================================================
