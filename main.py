@@ -85,12 +85,12 @@ def verificar_acceso(user_id):
         return False
 
 # ==============================================================================
-# SECCIÓN 4: LISTA DE COMANDOS (TEXTO SIMPLE) - CON EJEMPLOS
+# SECCIÓN 4: LISTA DE COMANDOS (TEXTO SIMPLE)
 # ==============================================================================
 def generar_lista_comandos():
-    """COMANDOS COMPLETO"""
+    """Genera la lista completa de comandos en texto simple con EJEMPLOS de uso"""
     
-    comandos = """📄 **RENIEC:**
+    comandos = """ **RENIEC:**
 /dni 44441111 - Foto y datos de una persona
 /nm JUAN CARLOS RAMIREZ ESPINOZA - Búsqueda por nombres
 
@@ -118,13 +118,13 @@ def generar_lista_comandos():
 👤 **FACIAL:**
 /facial [foto] - Reconocimiento facial masivo
 
-👤 **PERSONAS:**
+ **PERSONAS:**
 /seekerdni 44445555 - Seeker completo por DNI
 /metadni 44445555 - Seeker completo PDF
 /seeker 45454545 - Seeker completo v2.0
 /co 44445555 - Correos de una persona
 
-🚗 **VEHICULOS:**
+ **VEHICULOS:**
 /insve ABC123 - Inscripción vehicular PDF
 /pla ABC123 - Datos de vehículo
 /placapdf ABC123 - Sunarp asientos PDF
@@ -165,13 +165,13 @@ def generar_lista_comandos():
 💵 **SUNAT:**
 /ruc 20165465009 - RUC info completo
 
-👨‍👩‍👧 **FAMILIA:**
+👨‍‍👧 **FAMILIA:**
 /ag 44441111 - Árbol genealógico texto
 /ag2 44441111 - Árbol genealógico texto v2
 /agv 44441111 - Árbol genealógico visual PNG
 /famivi 44441111 - Árbol familiar visual
 
-🎓 **MINEDU:**
+ **MINEDU:**
 /minedu 44445555 - Notas Minedu PDF
 
 🚦 **MTC:**
@@ -214,11 +214,11 @@ def generar_lista_comandos():
     return comandos
 
 # ==============================================================================
-# SECCIÓN 5: HANDLERS DE COMANDOS
+# SECCIÓN 5: HANDLERS DE COMANDOS (SIN IMAGEN - SIN ERRORES)
 # ==============================================================================
 @bot_client.on(events.NewMessage(incoming=True, pattern=r'(?i)^/cmds|^/menu|^/help|^/comandos'))
 async def cmds_handler(event):
-    """Handler para el comando /cmds - Muestra lista simple de comandos con imagen"""
+    """Handler para el comando /cmds - Muestra lista de comandos (SIN IMAGEN)"""
     try:
         sender_id = event.sender_id
         
@@ -240,24 +240,15 @@ async def cmds_handler(event):
         # Obtener lista de comandos
         lista_comandos = generar_lista_comandos()
         
-        mensaje_completo = (
+        mensaje = (
             f"**[ LISTA DE COMANDOS ]**\n\n"
             f"**AXEL DOX BOT**\n\n"
-            f"{lista_comandos}\n\n"
-            f"💡 Usa los ejemplos mostrados como referencia."
+            f"{lista_comandos}"
         )
         
-        # 🖼️ 1. ENVIAR IMAGEN CON UN CAPTION CORTO (Evita el límite de 1024 caracteres de Telegram)
-        await event.reply(
-            file="https://i.postimg.cc/sgxrCSxP/cmdsiamgen.png",
-            message="📋 **COMANDOS DISPONIBLES**\n\nA continuación la lista completa:",
-            parse_mode='md'
-        )
+        # ✅ ENVIAR SOLO TEXTO (Sin imagen que cause errores)
+        await event.reply(mensaje, parse_mode='md')
         
-        # 📝 2. ENVIAR EL TEXTO COMPLETO COMO MENSAJE SEPARADO
-        await event.reply(mensaje_completo, parse_mode='md')
-        
-        # 🛑 DETENER PROPAGACIÓN para que el handler general no lo procese dos veces
         raise events.StopPropagation
         
     except Exception as e:
@@ -278,7 +269,7 @@ async def bot_message_handler(event):
         chat_id = event.chat_id
         sender_id = event.sender_id
         
-        # 🛡️ Si es un comando de menú, ignorar (ya lo maneja cmds_handler)
+        # 🛡️ Si es un comando de menú, ignorar
         if texto_lower.startswith('/cmds') or texto_lower.startswith('/menu') or texto_lower.startswith('/help') or texto_lower.startswith('/comandos'):
             return
         
@@ -410,7 +401,7 @@ async def bot_message_handler(event):
         print(f"✅ Usuario {sender_id} tiene acceso verificado")
         
         if chat_id in processing_messages:
-            print(f"   ⚠️ Ya hay un procesamiento en curso para {chat_id}, ignorando")
+            print(f"   ️ Ya hay un procesamiento en curso para {chat_id}, ignorando")
             return
         
         processing_msg = await event.reply("⏳ Procesando...")
@@ -432,7 +423,7 @@ async def bot_message_handler(event):
 
 
 # ==============================================================================
-# SECCIÓN 7: HANDLER DE CUENTA PRINCIPAL (TXT PARA /nm - TODO EN UNO)
+# SECCIÓN 7: HANDLER DE CUENTA PRINCIPAL (BLINDADO CONTRA MEZCLAS)
 # ==============================================================================
 @user_client.on(events.NewMessage(incoming=True))
 async def user_receive_handler(event):
@@ -474,9 +465,10 @@ async def user_receive_handler(event):
             else:
                 msg_enviado = await user_client.send_message(CODE_BOT, texto_original)
             
+            # 🔑 CORRECCIÓN CRÍTICA: Guardamos el ID exacto del mensaje enviado
             msg_enviado_id = msg_enviado.id
             msg_enviado_time = msg_enviado.date
-            print("   ✅ Enviado a Provenet correctamente")
+            print(f"   ✅ Enviado a Provenet (Msg ID: {msg_enviado_id})")
             
         except Exception as e:
             await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n❌ Error al enviar: {e}")
@@ -492,31 +484,44 @@ async def user_receive_handler(event):
         tiempo_esperado = 0
         tiempo_sin_nuevos = 0
         
-        # BUCLE DE ESPERA INTELIGENTE
+        # BUCLE DE ESPERA INTELIGENTE Y BLINDADO
         while tiempo_esperado < tiempo_maximo:
             await asyncio.sleep(3)
             tiempo_esperado += 3
             
             try:
-                mensajes = await user_client.get_messages(CODE_BOT, limit=100)
+                mensajes = await user_client.get_messages(CODE_BOT, limit=20)
                 hay_nuevos = False
                 
                 for msg in mensajes:
                     if msg.id in ids_ya_procesados:
                         continue
-                        
-                    msg_text = msg.text or msg.raw_text or ""
-                    msg_date = msg.date
                     
+                    # 🔑 FILTRO 1: Debe ser posterior a nuestro envío
+                    if msg.date <= msg_enviado_time:
+                        continue
+                    
+                    # 🔑 FILTRO 2: Debe ser respuesta directa a nuestro mensaje
+                    es_nuestra_respuesta = False
+                    if hasattr(msg, 'reply_to_msg_id') and msg.reply_to_msg_id == msg_enviado_id:
+                        es_nuestra_respuesta = True
+                    elif not msg.text or msg.text.strip().lower() != texto_original.strip().lower():
+                        es_nuestra_respuesta = True
+                    
+                    if not es_nuestra_respuesta:
+                        continue
+
                     # Filtros para ignorar basura
-                    if msg_date <= msg_enviado_time: continue
-                    if msg.id == msg_enviado_id: continue
-                    if msg_text and any(x in msg_text.lower() for x in palabras_basura): continue
+                    msg_text = msg.text or msg.raw_text or ""
+                    if msg_text and any(x in msg_text.lower() for x in palabras_basura):
+                        continue
                     
                     comando_limpio = texto_original.strip().lower()
                     mensaje_limpio = msg_text.strip().lower()
-                    if mensaje_limpio == comando_limpio: continue
-                    if len(mensaje_limpio) < len(comando_limpio) + 10 and comando_limpio in mensaje_limpio: continue
+                    if mensaje_limpio == comando_limpio:
+                        continue
+                    if len(mensaje_limpio) < len(comando_limpio) + 10 and comando_limpio in mensaje_limpio:
+                        continue
                     
                     # ✅ ES UN MENSAJE VÁLIDO
                     mensajes_finales.append(msg)
@@ -530,16 +535,15 @@ async def user_receive_handler(event):
                 else:
                     tiempo_sin_nuevos += 3
                 
-                # Si pasan 6 segundos sin nada nuevo, terminamos
                 if len(mensajes_finales) > 0 and tiempo_sin_nuevos >= 6:
                     print(f"   ✅ No llegan más mensajes. Total: {len(mensajes_finales)}")
                     break
                     
             except Exception as e:
-                print(f"   ⚠️ Error: {e}")
+                print(f"   ️ Error: {e}")
                 continue
 
-        #  ENVÍO SEGÚN EL TIPO DE COMANDO
+        # ENVÍO SEGÚN EL TIPO DE COMANDO
         if not mensajes_finales:
             print("   ⚠️ No se recibió respuesta")
             await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n⚠️ ERROR: Sin respuesta")
@@ -548,9 +552,8 @@ async def user_receive_handler(event):
             
             # 🔑 SI ES /nm → ENVIAR TODO EN UN TXT
             if es_comando_nm and total > 1:
-                print(f"   📄 Comando /nm detectado. Creando archivo TXT con {total} mensajes...")
+                print(f"   📄 Comando /nm detectado. Creando archivo TXT...")
                 
-                # Combinar todo el contenido
                 contenido_completo = ""
                 for idx, msg in enumerate(mensajes_finales, 1):
                     if msg.text:
@@ -560,22 +563,20 @@ async def user_receive_handler(event):
                         contenido_completo += msg.text
                         contenido_completo += f"\n\n"
                 
-                # Crear archivo TXT
                 nombre_archivo = f"RESULTADO_NM_{chat_destino}.txt"
                 
-                # Enviar como archivo
                 await user_client.send_file(
                     BOT_USERNAME,
                     contenido_completo.encode('utf-8'),
-                    caption=f"📄 **RESULTADO PARA: {chat_destino}**\n\n📦 {total} resultados encontrados\n📋 Archivo TXT adjunto",
+                    caption=f" **RESULTADO PARA: {chat_destino}**\n\n📦 {total} resultados\n📋 Archivo TXT",
                     filename=nombre_archivo
                 )
                 
-                print(f"   ✅ Archivo TXT enviado con {total} resultados")
+                print(f"   ✅ Archivo TXT enviado")
             
-            # 🔑 SI NO ES /nm O SOLO HAY 1 MENSAJE → ENVIAR NORMAL
+            # 🔑 SI NO ES /nm → ENVIAR NORMAL
             else:
-                print(f"   📤 Enviando {total} mensaje(s) normalmente...")
+                print(f"   📤 Enviando {total} mensaje(s)...")
                 
                 for idx, msg in enumerate(mensajes_finales, 1):
                     try:
@@ -586,10 +587,8 @@ async def user_receive_handler(event):
                         
                         if msg.media:
                             await user_client.send_file(BOT_USERNAME, msg.media, caption=header + (msg.text or ""))
-                            print(f"   ✅ PARTE {idx} enviada (con media)")
                         else:
                             await user_client.send_message(BOT_USERNAME, header + msg.text)
-                            print(f"   ✅ PARTE {idx} enviada (texto)")
                         
                         await asyncio.sleep(0.5)
                         
@@ -602,7 +601,7 @@ async def user_receive_handler(event):
         print(f"{'='*50}\n")
         
     except Exception as e:
-        print(f"❌ [USER] ERROR GENERAL: {e}")
+        print(f" [USER] ERROR GENERAL: {e}")
         import traceback
         traceback.print_exc()
 
