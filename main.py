@@ -32,7 +32,7 @@ bot_client = TelegramClient('bot_session', API_ID, API_HASH)
 # ==============================================================================
 bot_id = None
 main_account_id = None
-processing_messages = {}  # {chat_id: {'request_id': 'xxx', 'termino': 'yyy', 'msg_id': 'zzz'}}
+processing_messages = {}
 pending_media = {}
 resultados_enviados = {}
 
@@ -91,7 +91,7 @@ def verificar_acceso(user_id):
 def generar_lista_comandos():
     """Genera la lista completa de comandos"""
     
-    comandos = """📄 **RENIEC:**
+    comandos = """ **RENIEC:**
 /dni 44441111 - Foto y datos de una persona
 /nm JUAN CARLOS RAMIREZ ESPINOZA - Búsqueda por nombres
 
@@ -116,7 +116,7 @@ def generar_lista_comandos():
 /telp 987654321 - Búsqueda titular
 /telx 44445555 - Telefonía general
 
-👤 **FACIAL:**
+ **FACIAL:**
 /facial [foto] - Reconocimiento facial masivo
 
 👤 **PERSONAS:**
@@ -148,7 +148,7 @@ def generar_lista_comandos():
 💰 **FINANCIERO:**
 /sentinel 44445555 - SBS Central de riesgos PDF
 
-📑 **SUNARP:**
+ **SUNARP:**
 /sunarp 44445555 - Sunarp texto
 /sunarpdf 44445555 - Sunarp PDF
 /bienespdf 44445555 - Bienes inmuebles PDFs
@@ -166,7 +166,7 @@ def generar_lista_comandos():
 💵 **SUNAT:**
 /ruc 20165465009 - RUC info completo
 
-👨‍👩‍👧 **FAMILIA:**
+👨👩‍👧 **FAMILIA:**
 /ag 44441111 - Árbol genealógico texto
 /ag2 44441111 - Árbol genealógico texto v2
 /agv 44441111 - Árbol genealógico visual PNG
@@ -189,7 +189,7 @@ def generar_lista_comandos():
 /dminsa 60685138|INFECCIÓN ESTOMACAL|HOSPITAL NACIONAL CAYETANO HEREDIA|21-04-2026|2 - Descanso Minsa PDF
 /dessalud DNI|NOMBRE|CONTINGENCIA|DIAS - Descanso Essalud PDF
 
-🇦🇷 **ARGENTINA:**
+🇦 **ARGENTINA:**
 /dniarg 12345678 - Búsqueda por DNI Argentina
 /telarg 2284524520 - Búsqueda por teléfono Argentina
 /nmarg juan perez - Búsqueda por nombre Argentina
@@ -209,7 +209,7 @@ def generar_lista_comandos():
 /dpm Juan Perez|Ingeniería de Sistemas - Diploma USC
 
 ━━━━━━━━━━━━━━━━━━━━
-📊 Total: 78 comandos disponibles
+ Total: 78 comandos disponibles
 💡 Usa los ejemplos mostrados como referencia"""
     
     return comandos
@@ -366,10 +366,10 @@ async def bot_message_handler(event):
             print(f"   ⚠️ Ya hay procesamiento en curso")
             return
         
-        processing_msg = await event.reply(" Procesando...")
+        processing_msg = await event.reply("⏳ Procesando...")
         
         # 🔑 GENERAR ID ÚNICO PARA ESTA CONSULTA
-        request_id = str(uuid.uuid4())[:8]  # ID único de 8 caracteres
+        request_id = str(uuid.uuid4())[:8]
         
         processing_messages[chat_id] = {
             'msg_id': processing_msg.id,
@@ -393,7 +393,7 @@ async def bot_message_handler(event):
 
 
 # ==============================================================================
-# SECCIÓN 7: HANDLER DE CUENTA PRINCIPAL (CON ID ÚNICO POR CONSULTA)
+# SECCIÓN 7: HANDLER DE CUENTA PRINCIPAL (CORREGIDO - CAPTURA TODAS LAS RESPUESTAS)
 # ==============================================================================
 @user_client.on(events.NewMessage(incoming=True))
 async def user_receive_handler(event):
@@ -428,7 +428,7 @@ async def user_receive_handler(event):
         request_id_enviado = None
         if "REQUEST_ID:" in texto:
             request_id_enviado = texto.split("REQUEST_ID:")[1].split("\n")[0].strip()
-            print(f"   ✅ Request ID recibido: {request_id_enviado}")
+            print(f"   ✅ Request ID: {request_id_enviado}")
         
         # 🔑 EXTRAER TÉRMINO DE BÚSQUEDA
         partes_comando = texto_original.split(' ', 1)
@@ -455,22 +455,24 @@ async def user_receive_handler(event):
             await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n❌ Error: {e}")
             return
         
-        print(f"   ⏳ Esperando respuesta que contenga: '{termino_busqueda}'...")
+        print(f"   ⏳ Esperando respuestas que contengan: '{termino_busqueda}'...")
         
         mensajes_finales = []
         ids_ya_procesados = set()
         palabras_basura = ['espera', 'consultando', 'cargando', 'procesando', 'generando']
-        respuesta_completa = False
         
         tiempo_maximo = 45
         tiempo_esperado = 0
+        tiempo_sin_nuevos = 0
         
-        while tiempo_esperado < tiempo_maximo and not respuesta_completa:
+        # 🔑 BUCLE DE ESPERA - NO SE DETIENE AL PRIMER "CONSULTA EXITOSA"
+        while tiempo_esperado < tiempo_maximo:
             await asyncio.sleep(3)
             tiempo_esperado += 3
             
             try:
                 mensajes = await user_client.get_messages(CODE_BOT, limit=50)
+                hay_nuevos = False
                 
                 for msg in mensajes:
                     if msg.id in ids_ya_procesados:
@@ -491,14 +493,7 @@ async def user_receive_handler(event):
 
                     msg_text = msg.text or msg.raw_text or ""
                     
-                    # 🔑 DETECTAR MENSAJE DE ÉXITO
-                    if "consulta se hizo de manera exitosa" in msg_text.lower() or "consulta exitosa" in msg_text.lower():
-                        print(f"   ✅ Detectado mensaje de éxito")
-                        mensajes_finales.append(msg)
-                        ids_ya_procesados.add(msg.id)
-                        respuesta_completa = True
-                        break
-                    
+                    # 🔑 NO DETENERSE EN "CONSULTA EXITOSA" - Solo capturar y continuar
                     # Ignorar mensajes de espera
                     if msg_text and any(x in msg_text.lower() for x in palabras_basura):
                         continue
@@ -519,13 +514,21 @@ async def user_receive_handler(event):
                         print(f"   ⚠️ NO contiene '{termino_busqueda}' - Ignorando")
                         continue
                     
-                    # ✅ CAPTURAR MENSAJE
+                    # ✅ CAPTURAR MENSAJE (incluso si tiene "CONSULTA EXITOSA")
                     mensajes_finales.append(msg)
                     ids_ya_procesados.add(msg.id)
+                    hay_nuevos = True
                     print(f"   ✅ CAPTADO - Contiene '{termino_busqueda}'")
                     print(f"   📥 Total: {len(mensajes_finales)}")
                 
-                if respuesta_completa:
+                if hay_nuevos:
+                    tiempo_sin_nuevos = 0
+                else:
+                    tiempo_sin_nuevos += 3
+                
+                # 🔑 DETENERSE DESPUÉS DE 10 SEGUNDOS SIN NUEVOS MENSAJES
+                if len(mensajes_finales) > 0 and tiempo_sin_nuevos >= 10:
+                    print(f"   ✅ No llegan más mensajes después de 10s. Total: {len(mensajes_finales)}")
                     break
                     
             except Exception as e:
@@ -538,19 +541,18 @@ async def user_receive_handler(event):
             await user_client.send_message(BOT_USERNAME, f"RESULTADO PARA: {chat_destino}\n\n⚠️ ERROR: Sin respuesta")
         else:
             total = len(mensajes_finales)
-            total_resultados = total - 1
-            print(f"   📊 Total: {total_resultados} resultados")
+            print(f"   📊 Total capturado: {total} mensajes")
             
-            if es_comando_nm and total_resultados > 1:
-                print(f"   📄 Creando TXT...")
+            if es_comando_nm and total > 1:
+                print(f"    Creando TXT...")
                 
                 contenido_completo = ""
                 contador = 0
                 for idx, msg in enumerate(mensajes_finales, 1):
-                    if msg.text and "consulta se hizo de manera exitosa" not in msg.text.lower():
+                    if msg.text:
                         contador += 1
                         contenido_completo += f"\n{'='*60}\n"
-                        contenido_completo += f" RESULTADO {contador} DE {total_resultados}\n"
+                        contenido_completo += f" RESULTADO {contador} DE {total}\n"
                         contenido_completo += f"{'='*60}\n\n"
                         contenido_completo += msg.text
                         contenido_completo += f"\n\n"
@@ -560,26 +562,23 @@ async def user_receive_handler(event):
                 await user_client.send_file(
                     BOT_USERNAME,
                     contenido_completo.encode('utf-8'),
-                    caption=f" **RESULTADO PARA: {chat_destino}**\n\n📦 {total_resultados} resultados",
+                    caption=f"📄 **RESULTADO PARA: {chat_destino}**\n\n📦 {total} resultados",
                     filename=nombre_archivo
                 )
                 
                 print(f"   ✅ TXT enviado")
             
             else:
-                print(f"   📤 Enviando {total_resultados} mensaje(s)...")
+                print(f"   📤 Enviando {total} mensaje(s)...")
                 
                 for idx, msg in enumerate(mensajes_finales, 1):
                     try:
                         msg_text = msg.text or ""
                         
-                        if "consulta se hizo de manera exitosa" in msg_text.lower():
-                            continue
-                        
                         header = f"RESULTADO PARA: {chat_destino}\n\n"
                         
-                        if total_resultados > 1:
-                            header += f"**📦 PARTE {idx} DE {total_resultados}**\n\n"
+                        if total > 1:
+                            header += f"**📦 PARTE {idx} DE {total}**\n\n"
                         
                         if msg.media:
                             await user_client.send_file(BOT_USERNAME, msg.media, caption=header + msg_text)
@@ -589,7 +588,7 @@ async def user_receive_handler(event):
                         await asyncio.sleep(0.5)
                         
                     except Exception as e:
-                        print(f"   ❌ Error: {e}")
+                        print(f"    Error: {e}")
                         continue
 
             print(f"   🎉 PROCESO COMPLETADO")
@@ -609,10 +608,10 @@ async def main():
     global bot_id, main_account_id
     
     print("\n" + "="*60)
-    print(" INICIANDO AXEL BOT")
+    print("🚀 INICIANDO AXEL BOT")
     print("="*60)
     
-    print(" Iniciando cuenta principal...")
+    print("📱 Iniciando cuenta principal...")
     await user_client.start()
     me = await user_client.get_me()
     main_account_id = me.id
