@@ -95,7 +95,7 @@ def generar_lista_comandos():
 /dni 44441111 - Foto y datos de una persona
 /nm JUAN CARLOS RAMIREZ ESPINOZA - Búsqueda por nombres
 
- **METADATA:**
+📱 **METADATA:**
 /metadata 44445555 - Metadata completa DNI + PDF
 /metanum 987654321 - Seeker módulo 1 PDF
 /seekerdni 44445555 - Seeker módulo 2 DNI
@@ -116,7 +116,7 @@ def generar_lista_comandos():
 /telp 987654321 - Búsqueda titular
 /telx 44445555 - Telefonía general
 
- **FACIAL:**
+👤 **FACIAL:**
 /facial [foto] - Reconocimiento facial masivo
 
  **PERSONAS:**
@@ -148,12 +148,12 @@ def generar_lista_comandos():
 💰 **FINANCIERO:**
 /sentinel 44445555 - SBS Central de riesgos PDF
 
- **SUNARP:**
+📑 **SUNARP:**
 /sunarp 44445555 - Sunarp texto
 /sunarpdf 44445555 - Sunarp PDF
 /bienespdf 44445555 - Bienes inmuebles PDFs
 
-⚖️ **JUSTICIA:**
+️ **JUSTICIA:**
 /fiscalia 44445555 - Fiscalía texto
 /fiscaliapdf 44445555 - Fiscalía PDF DNI
 /fisruc 20536902385 - Fiscalía PDF RUC
@@ -166,7 +166,7 @@ def generar_lista_comandos():
 💵 **SUNAT:**
 /ruc 20165465009 - RUC info completo
 
-👨👧 **FAMILIA:**
+👨‍ **FAMILIA:**
 /ag 44441111 - Árbol genealógico texto
 /ag2 44441111 - Árbol genealógico texto v2
 /agv 44441111 - Árbol genealógico visual PNG
@@ -175,7 +175,7 @@ def generar_lista_comandos():
  **MINEDU:**
 /minedu 44445555 - Notas Minedu PDF
 
- **MTC:**
+🚦 **MTC:**
 /licencia 45454545 - Licencia de conducir
 /licenciapdf 45454545 - Licencia electrónica PDF
 /record 45454545 - Papeletas por DNI PDF
@@ -194,7 +194,7 @@ def generar_lista_comandos():
 /telarg 2284524520 - Búsqueda por teléfono Argentina
 /nmarg juan perez - Búsqueda por nombre Argentina
 
- **GENERADOR:**
+⚙️ **GENERADOR:**
 /c4 44441111 - C4 azul generado
 /c4b 44441111 - C4 blanco generado
 /c4i 44441111 - Certificado de inscripción
@@ -209,8 +209,8 @@ def generar_lista_comandos():
 /dpm Juan Perez|Ingeniería de Sistemas - Diploma USC
 
 ━━━━━━━━━━━━━━━━━━━━
- Total: 78 comandos disponibles
- Usa los ejemplos mostrados como referencia"""
+📊 Total: 78 comandos disponibles
+💡 Usa los ejemplos mostrados como referencia"""
     return comandos
 
 # ==============================================================================
@@ -305,7 +305,7 @@ async def bot_message_handler(event):
                             except Exception:
                                 pass
                     except Exception as e:
-                        print(f"   ⚠️ Error al reenviar media: {e}")
+                        print(f"   ️ Error al reenviar media: {e}")
                 
                 await asyncio.sleep(10)
                 for chat_id_pendiente in chats_pendientes:
@@ -320,7 +320,7 @@ async def bot_message_handler(event):
         if not tiene_acceso:
             await event.reply(
                 f"⚠️ <b>No tienes acceso activo.</b>\n\n"
-                f"🆔 <b>Tu ID:</b> <code>{sender_id}</code>",
+                f" <b>Tu ID:</b> <code>{sender_id}</code>",
                 parse_mode='html'
             )
             return
@@ -328,7 +328,7 @@ async def bot_message_handler(event):
         if chat_id in processing_messages:
             return
         
-        processing_msg = await event.reply(" Procesando...")
+        processing_msg = await event.reply("⏳ Procesando...")
         processing_messages[chat_id] = processing_msg.id
 
         if event.media:
@@ -381,7 +381,7 @@ async def user_axel_handler(event):
     texto_original = lineas[1].strip()
     
     if not texto_original and not event.media:
-        print("⚠️ Comando vacío")
+        print("️ Comando vacío")
         return
 
     print(f"   ✅ chat_destino: {chat_destino}")
@@ -415,7 +415,9 @@ async def user_axel_handler(event):
             'mensajes_recibidos': [],
             'mensajes_enviados_ids': set(),
             'ya_respondio': False,
-            'timeout_task': None
+            'timeout_task': None,
+            'cleanup_task': None,  # 🔑 Nueva: tarea para limpiar después del último mensaje
+            'ultimo_mensaje_time': None  # 🔑 Nueva: timestamp del último mensaje recibido
         }
         
         print(f"   ✅ Consulta registrada - Msg ID: {msg_enviado_id} → Chat: {chat_destino}")
@@ -459,6 +461,10 @@ async def user_provenet_handler(event):
     msg_id_asociado = None
     
     for req_id, consulta in consultas_activas.items():
+        # 🔑 Saltar consultas que ya fueron completadas (cleanup iniciado)
+        if consulta.get('cleanup_task') and consulta.get('cleanup_task').done():
+            continue
+        
         # MÉTODO 1: Respuesta directa (reply_to_msg_id)
         if hasattr(event.message, 'reply_to_msg_id') and event.message.reply_to_msg_id:
             if event.message.reply_to_msg_id == req_id:
@@ -490,11 +496,6 @@ async def user_provenet_handler(event):
         print("   ⚠️ No asociada a ninguna consulta activa - Ignorando")
         return
     
-    # 🔑 CRÍTICO: Verificar si YA se respondió esta consulta
-    if consulta_encontrada.get('ya_respondio', False):
-        print(f"   ⚠️ Esta consulta YA fue respondida - Ignorando")
-        return
-    
     chat_destino = consulta_encontrada['chat_destino']
     
     # Evitar ecos (comando original = respuesta)
@@ -503,10 +504,20 @@ async def user_provenet_handler(event):
         print("   ⚠️ Ignorando eco del comando original")
         return
     
-    # 🔑 CRÍTICO: Verificar si YA se envió este mensaje específico
+    # 🔑 CRÍTICO: Verificar si YA se envió este mensaje específico (evitar duplicados)
     if msg_id in consulta_encontrada.get('mensajes_enviados_ids', set()):
         print(f"   ⚠️ Mensaje {msg_id} YA enviado - Evitando duplicado")
         return
+    
+    # 🔑 CRÍTICO: Cancelar el timeout principal porque YA llegó al menos una respuesta
+    if consulta_encontrada.get('timeout_task') and not consulta_encontrada['timeout_task'].done():
+        consulta_encontrada['timeout_task'].cancel()
+        print(f"   ✅ Timeout principal CANCELADO - Respuesta recibida")
+    
+    # 🔑 CRÍTICO: Cancelar cleanup anterior si existe (porque llegó otro mensaje)
+    if consulta_encontrada.get('cleanup_task') and not consulta_encontrada['cleanup_task'].done():
+        consulta_encontrada['cleanup_task'].cancel()
+        print(f"    Cleanup anterior cancelado - Llegó otro mensaje")
     
     # Agregar mensaje a la consulta
     consulta_encontrada['mensajes_recibidos'].append(event.message)
@@ -516,17 +527,15 @@ async def user_provenet_handler(event):
         consulta_encontrada['mensajes_enviados_ids'] = set()
     consulta_encontrada['mensajes_enviados_ids'].add(msg_id)
     
-    # 🔑 CRÍTICO: Marcar que ya se respondió
+    # 🔑 Marcar que ya se respondió (al menos una vez)
     consulta_encontrada['ya_respondio'] = True
     
-    # 🔑 CRÍTICO: Cancelar el timeout porque YA llegó respuesta
-    if consulta_encontrada.get('timeout_task'):
-        consulta_encontrada['timeout_task'].cancel()
-        print(f"   ✅ Timeout CANCELADO - Respuesta recibida")
+    # 🔑 Actualizar timestamp del último mensaje
+    consulta_encontrada['ultimo_mensaje_time'] = datetime.now()
     
-    print(f"    Reenviando al chat {chat_destino}")
+    print(f"   📤 Reenviando al chat {chat_destino}")
     
-    # Enviar INMEDIATAMENTE al bot Axel
+    #  CRÍTICO: Enviar INMEDIATAMENTE este mensaje al bot Axel
     try:
         header = f"RESULTADO PARA: {chat_destino}\n\n"
         
@@ -539,12 +548,50 @@ async def user_provenet_handler(event):
     except Exception as e:
         print(f"   ❌ Error al reenviar: {e}")
     
-    # Limpiar consulta
-    if msg_id_asociado and msg_id_asociado in consultas_activas:
-        del consultas_activas[msg_id_asociado]
+    # 🔑 CRÍTICO: Iniciar tarea de limpieza que espera 5 segundos sin nuevos mensajes
+    cleanup_task = asyncio.create_task(limpiar_consulta_despues(msg_id_asociado, chat_destino, 5))
+    consulta_encontrada['cleanup_task'] = cleanup_task
     
-    print(f"   🎉 Consulta completada y eliminada")
+    print(f"   ⏳ Esperando 5s por si llegan más mensajes...")
     print(f"{'='*60}\n")
+
+
+# ==============================================================================
+# FUNCIÓN: LIMPIAR CONSULTA DESPUÉS DE INACTIVIDAD
+# ==============================================================================
+async def limpiar_consulta_despues(request_id, chat_destino, segundos_espera=5):
+    """
+    Espera X segundos después del último mensaje.
+    Si no llegan más mensajes, marca la consulta como completada.
+    """
+    try:
+        await asyncio.sleep(segundos_espera)
+        
+        if request_id not in consultas_activas:
+            return
+        
+        consulta = consultas_activas[request_id]
+        
+        # Verificar si llegó algún mensaje nuevo durante la espera
+        if consulta.get('ultimo_mensaje_time'):
+            tiempo_desde_ultimo = (datetime.now() - consulta['ultimo_mensaje_time']).total_seconds()
+            
+            if tiempo_desde_ultimo < segundos_espera:
+                # Llegó otro mensaje, no limpiar aún
+                print(f"    Llegó otro mensaje, extendiendo espera...")
+                return
+        
+        # No llegaron más mensajes, marcar como completada
+        print(f"   ✅ Consulta {request_id} completada - No llegaron más mensajes")
+        
+        if request_id in consultas_activas:
+            del consultas_activas[request_id]
+            print(f"   ️ Consulta {request_id} eliminada")
+            
+    except asyncio.CancelledError:
+        print(f"   ⏳ Cleanup cancelado para consulta {request_id}")
+    except Exception as e:
+        print(f"   ❌ Error en limpiar_consulta_despues: {e}")
 
 
 # ==============================================================================
@@ -570,13 +617,13 @@ async def controlar_timeout(request_id, chat_destino, timeout_segundos=35):
             
             consulta = consultas_activas[request_id]
             
-            # Si ya se respondió, cancelar timeout
+            # Si ya se respondió al menos una vez, cancelar timeout
             if consulta.get('ya_respondio', False):
-                print(f"   ✅ Consulta {request_id} respondida a los {tiempo_transcurrido}s")
+                print(f"   ✅ Consulta {request_id} tiene respuesta - Timeout cancelado a los {tiempo_transcurrido}s")
                 return
         
         # Se agotó el tiempo sin respuesta
-        print(f"   ⏱️ TIMEOUT: Consulta {request_id} excedió {timeout_segundos}s")
+        print(f"   ⏱️ TIMEOUT: Consulta {request_id} excedió {timeout_segundos}s sin respuesta")
         
         if request_id in consultas_activas:
             consulta = consultas_activas[request_id]
@@ -620,7 +667,7 @@ async def main():
     main_account_id = me.id
     print(f"✅ Cuenta: {me.first_name} (ID: {main_account_id})")
 
-    print("\n Iniciando Bot...")
+    print("\n🤖 Iniciando Bot...")
     await bot_client.start(bot_token=BOT_TOKEN)
     bot_me = await bot_client.get_me()
     bot_id = bot_me.id
